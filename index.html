@@ -1,0 +1,331 @@
+html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kosmik Undertale - Simulator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #050510;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #game-screen {
+            width: 800px;
+            height: 450px;
+            background: radial-gradient(circle at center, #1b0a2a 0%, #020208 100%);
+            border: 4px solid #333;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,240,255,0.2);
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+        #logo {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #00f0ff;
+            margin-top: 20px;
+            text-shadow: 0 0 10px #00f0ff;
+            letter-spacing: 4px;
+        }
+        #battle-box {
+            width: 400px;
+            height: 140px;
+            border: 4px solid white;
+            margin: 30px auto 0 auto;
+            background: black;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        #status-text {
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: center;
+            width: 100%;
+        }
+        #nanami-bar {
+            width: 300px;
+            height: 30px;
+            background: #222;
+            border: 2px solid white;
+            margin-top: 10px;
+            position: relative;
+            display: none;
+        }
+        #nanami-scale {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            letter-spacing: 5px;
+            color: #888;
+        }
+        #nanami-cursor {
+            width: 8px;
+            height: 100%;
+            background: #ff0077;
+            position: absolute;
+            left: 0;
+            top: 0;
+            box-shadow: 0 0 8px #ff0077;
+        }
+        #controls {
+            position: absolute;
+            bottom: 15px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            align-items: flex-end;
+        }
+        #joystick-area {
+            width: 100px;
+            height: 100px;
+            background: rgba(85, 85, 85, 0.4);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        #joystick-stick {
+            width: 40px;
+            height: 40px;
+            background: rgba(136, 136, 136, 0.9);
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s ease;
+            cursor: pointer;
+        }
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .action-btn {
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .action-btn:active {
+            transform: scale(0.9);
+        }
+        #btn-a {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 0, 119, 0.7);
+            border: 2px solid #ff0077;
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+        #btn-c {
+            width: 70px;
+            height: 70px;
+            background: rgba(0, 240, 255, 0.7);
+            border: 2px solid #00f0ff;
+            font-size: 22px;
+            text-shadow: 0 0 5px white;
+        }
+        #inventory-overlay {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            background: rgba(0,0,0,0.95);
+            border: 3px solid #ff0077;
+            padding: 15px;
+            display: none;
+            z-index: 10;
+        }
+        .inv-title {
+            color: #ff0077;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ff0077;
+            padding-bottom: 5px;
+        }
+        .inv-item {
+            padding: 4px 0;
+            font-size: 14px;
+        }
+        .inv-item.active {
+            color: #00f0ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-screen">
+        <div class="star" style="width:2px;height:2px;top:40px;left:80px;"></div>
+        <div class="star" style="width:3px;height:3px;top:120px;left:640px;"></div>
+        <div class="star" style="width:2px;height:2px;top:280px;left:150px;"></div>
+        <div class="star" style="width:4px;height:4px;top:80px;left:400px;background:#ff00ff;opacity:0.4;"></div>
+        <div class="star" style="width:3px;height:3px;top:350px;left:710px;"></div>
+
+        <div id="logo">KOSMIK UNDERTALE</div>
+
+        <div id="battle-box">
+            <div id="status-text">* У входа в пролом вас ждёт Заражённая Мышь (ОЗ: 15/15)!<br>* Нажмите кнопку [ С ], чтобы атаковать!</div>
+            <div id="nanami-bar">
+                <div id="nanami-scale">- + - + - [#] - + - + -</div>
+                <div id="nanami-cursor"></div>
+            </div>
+        </div>
+
+        <div id="inventory-overlay">
+            <div class="inv-title">ИНВЕНТАРЬ (Слоты: 3 / 10)</div>
+            <div id="inv-slots">
+                <div class="inv-item">1. Игрушечный бластер</div>
+                <div class="inv-item">2. Тюбик с котлетой (+15 ОЗ)</div>
+                <div class="inv-item" id="knife-slot">3. Тупой нож (В кармане)</div>
+            </div>
+            <div style="font-size:11px;color:#aaa;margin-top:10px;">* Нажмите [ C ], чтобы экипировать нож и закрыть меню.</div>
+        </div>
+
+        <div id="controls">
+            <div id="joystick-area">
+                <div id="joystick-stick"></div>
+            </div>
+            <div class="btn-group">
+                <div class="action-btn" id="btn-a">А</div>
+                <div class="action-btn" id="btn-c">С</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = "start";
+        let hpMouse = 15;
+        let knifeEquipped = false;
+        let cursorDirection = 1;
+        let cursorPosition = 0;
+        let animationFrameId = null;
+        let bonusDamage = 1.0;
+
+        const statusText = document.getElementById("status-text");
+        const nanamiBar = document.getElementById("nanami-bar");
+        const nanamiCursor = document.getElementById("nanami-cursor");
+        const invOverlay = document.getElementById("inventory-overlay");
+        const knifeSlot = document.getElementById("knife-slot");
+        const btnC = document.getElementById("btn-c");
+        const btnA = document.getElementById("btn-a");
+        const stick = document.getElementById("joystick-stick");
+
+        document.getElementById("joystick-area").addEventListener("mousedown", (e) => {
+            stick.style.transform = "translate(15px, -10px)";
+            if(gameState === "start" && !knifeEquipped) {
+                statusText.innerHTML = "* Вы упёрлись в край пролома!<br><span style='color:#ff0077;'>*(Вы не можете выйти с пустыми руками. Откройте инвентарь на кнопку [ А ] и экипируйте Тупой нож).*</span>";
+            }
+        });
+        
+        document.addEventListener("mouseup", () => {
+            stick.style.transform = "translate(0px, 0px)";
+        });
+
+        btnA.addEventListener("click", () => {
+            if (gameState === "won") return;
+            if (invOverlay.style.display === "block") {
+                invOverlay.style.display = "none";
+            } else {
+                invOverlay.style.display = "block";
+            }
+        });
+
+        function animateCursor() {
+            cursorPosition += 5 * cursorDirection;
+            if (cursorPosition >= 292) { cursorDirection = -1; cursorPosition = 292; }
+            if (cursorPosition <= 0) { cursorDirection = 1; cursorPosition = 0; }
+            nanamiCursor.style.left = cursorPosition + "px";
+            animationFrameId = requestAnimationFrame(animateCursor);
+        }
+
+        btnC.addEventListener("click", () => {
+            if (invOverlay.style.display === "block") {
+                knifeEquipped = true;
+                knifeSlot.innerHTML = "3. Симбиотический нож (ЭКИПИРОВАНО)";
+                knifeSlot.classList.add("active");
+                invOverlay.style.display = "none";
+                statusText.innerHTML = "* Тупой нож теперь в вашей руке! Вы готовы к бою.<br>* Нажмите [ С ], чтобы атаковать Мышь.";
+                return;
+            }
+
+            if (!knifeEquipped && gameState === "start") {
+                statusText.innerHTML = "* Вы безоружны! Сначала откройте Инвентарь на кнопку [ А ] и примените нож.";
+                return;
+            }
+
+            if (gameState === "start" && knifeEquipped) {
+                gameState = "timing";
+                statusText.innerHTML = "* Нацельтесь на критическую точку Нанами!";
+                nanamiBar.style.display = "block";
+Используйте код с осторожностью.
+cursorPosition = 0;
+cursorDirection = 1;
+animateCursor();
+return;
+}
+if (gameState === "timing") {
+cancelAnimationFrame(animationFrameId);
+nanamiBar.style.display = "none";
+let damage = 0;
+let hitType = "";
+if (cursorPosition >= 130 && cursorPosition <= 162) {
+damage = Math.round(16 * bonusDamage);
+hitType = "КРИТ СИСТЕМЫ НАНАМИ (7:3)!";
+} else if (cursorPosition >= 60 && cursorPosition <= 230) {
+damage = Math.round(10 * bonusDamage);
+hitType = "Обычное попадание (+)";
+} else {
+damage = Math.round(2 * bonusDamage);
+hitType = "Слабый замах (-)";
+}
+hpMouse -= damage;
+if (hpMouse < 0) hpMouse = 0;
+if (hpMouse <= 0) {
+gameState = "won";
+bonusDamage = 1.15;
+statusText.innerHTML = * Вы нанесли ${damage} ОЗ! [${hitType}]<br>* ЗАРАЖЁННАЯ МЫШЬ повержена с одного удара!<br>* Душа симбиота вселилась в ваш нож! Навсегда <span style='color:#00f0ff;'>+15% к урону</span>.;
+} else {
+gameState = "mouse_turn";
+statusText.innerHTML = * Вы нанесли ${damage} ОЗ. [${hitType}]. У мыши осталось ${hpMouse} ОЗ!<br>* <span style='color:#ff0077;'>ХОД МЫШИ:</span> Из темноты летят 3 щупальца! Вы успешно уклонились джойстиком!<br>* Нажмите [ С ], чтобы добить её.;
+}
+return;
+}
+if (gameState === "mouse_turn") {
+hpMouse = 0;
+gameState = "won";
+bonusDamage = 1.15;
+statusText.innerHTML = * Вы делаете выпад ножом и добиваете врага!<br>* ЗАРАЖЁННАЯ МЫШЬ повержена.<br>* Душа симбиота вселилась в ваш нож! Навсегда <span style='color:#00f0ff;'>+15% к урону</span>.;
+}
+});
