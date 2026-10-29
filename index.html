@@ -253,14 +253,20 @@
             stick.style.transform = "translate(0px, 0px)";
         });
 
-        btnA.addEventListener("click", () => {
-            if (gameState === "won") return;
-            if (invOverlay.style.display === "block") {
-                invOverlay.style.display = "none";
-            } else {
-                invOverlay.style.display = "block";
-            }
-        });
+    btnA.addEventListener("click", () => {
+    if (gameState === "won") return;
+
+    hpMouse -= 5;
+    
+    if (hpMouse <= 0) {
+        gameState = "won";
+        statusText.innerHTML = "* Заражённая Мышь побеждена!<br>* Вы победили!";
+    } else {
+        statusText.innerHTML = `* Вы атаковали Заражённую Мышь!<br>* У неё осталось здоровья: ${hpMouse}/15`;
+    });
+
+        
+        
 
         function animateCursor() {
             cursorPosition += 5 * cursorDirection;
