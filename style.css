@@ -138,3 +138,43 @@ body, html {
 #next-btn:hover {
     color: #ff0000; /* Красная при наведении */
 }
+/* =========================================
+   КНОПКИ УПРАВЛЕНИЯ (СТИЛЬ UNDERTALE MOBILE)
+   ========================================= */
+#controls {
+    display: grid;
+    grid-template-columns: 70px 70px 70px;
+    grid-template-rows: 70px 70px 70px;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    z-index: 50;
+}
+
+.control-btn {
+    background: rgba(0, 0, 0, 0.6); 
+    border: 3px solid #fff; 
+    color: #fff; 
+    font-size: 24px;
+    border-radius: 50%; 
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8); 
+    transition: all 0.1s;
+    user-select: none; 
+    -webkit-tap-highlight-color: transparent; 
+}
+
+.control-btn:active {
+    background: #fff;
+    color: #000;
+    transform: scale(0.95); 
+}
+
+.up { grid-column: 2; grid-row: 1; }
+.left { grid-column: 1; grid-row: 2; }
+.right { grid-column: 3; grid-row: 2; }
+.down { grid-column: 2; grid-row: 3; }
