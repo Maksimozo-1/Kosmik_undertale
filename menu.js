@@ -144,3 +144,26 @@ function playRandomSound() {
     const nextInterval = Math.random() * (30000 - 10000) + 10000;
     setTimeout(playRandomSound, nextInterval);
                   }
+// --- СЮЖЕТ ИГРЫ (ДИАЛОГИ) ---
+const dialogueLines = [
+    "Вы медленно открываете глаза. Всё тело ломит от боли. Вокруг темно, слышен только скрип металла и тихое шипение воздуха...",
+    "Вы пытаетесь вспомнить, что произошло. Вспышка. Черная дыра. Крик команды. А потом — тишина.",
+    "Вы с трудом поднимаетесь на ноги. Кажется, вы на какой-то неизвестной планете. В иллюминаторе виден странный, фиолетовый свет.",
+    "Внезапно, вы слышите странный звук за спиной. Вы не одни..."
+];
+
+let currentLine = 0;
+
+function nextDialogue() {
+    const textElement = document.getElementById('dialogue-text');
+    const btn = document.getElementById('next-btn');
+    
+    currentLine++;
+    
+    if (currentLine < dialogueLines.length) {
+        textElement.textContent = dialogueLines[currentLine];
+    } else {
+        textElement.textContent = "Продолжение следует...";
+        btn.style.display = 'none'; // Прячем кнопку, когда текст закончился
+    }
+}
