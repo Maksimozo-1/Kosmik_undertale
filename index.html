@@ -26,7 +26,12 @@
     <!-- Экран игры (пока пустой) -->
     <div id="game-screen">
         <!-- Сюда мы потом вставим твою игру -->
-        <h1 style="color:white; text-align:center; margin-top:20vh; font-family:sans-serif;">Твоя игра загружается...</h1>
+        <div id="scene-awake" class="scene">
+    <div class="text-box">
+        <p id="dialogue-text">Вы медленно открываете глаза. Всё тело ломит от боли. Вокруг темно, слышен только скрип металла и тихое шипение воздуха...</p>
+        <button id="next-btn" onclick="nextDialogue()">Далее ▶</button>
+    </div>
+        </div>
     </div>
 
     <!-- Подключаем скрипты -->
