@@ -164,6 +164,89 @@ function nextDialogue() {
         textElement.textContent = dialogueLines[currentLine];
     } else {
         textElement.textContent = "Продолжение следует...";
-        btn.style.display = 'none'; // Прячем кнопку, когда текст закончился
+        btn.style.display = 'none';
+
+        // Запускаем кат-сцену через 1.5 секунды
+        setTimeout(() => {
+            const gameScreen = document.getElementById('game-screen');
+            
+            // 1. Включаем тряску и вспышку
+            gameScreen.classList.add('flash-effect', 'shake-effect');
+
+            // 2. Через 1.5 секунды показываем титры
+            setTimeout(() => {
+                gameScreen.classList.remove('flash-effect', 'shake-effect');
+                document.getElementById('scene-awake').style.display = 'none';
+                document.getElementById('splash-screen').style.display = 'flex';
+
+                // 3. Через 2.5 секунды показываем комнату
+                setTimeout(() => {
+                    document.getElementById('splash-screen').style.display = 'none';
+                    document.getElementById('map-container').style.display = 'block';
+                    document.getElementById('controls').style.display = 'grid'; 
+                    
+                    drawMap(); 
+                }, 2500); 
+
+            }, 1500); 
+        }, 1500); 
+    }
+}// --- КАРТА И ДВИЖЕНИЕ ---
+const mapWidth = 10;
+const mapHeight = 10;
+let playerPos = { x: 5, y: 5 };
+const playerElement = document.getElementById('player');
+
+const mapGrid = [
+    [1,1,1,1,1,1,1,1,1,1], 
+    [1,0,0,1,0,0,1,0,0,1],
+    [1,0,0,0,0,1,0,0,1,1],
+    [1,1,0,1,1,1,1,1,0,1],
+    [1,0,0,0,0,0,0,0,0,1],
+    [1,1,1,0,1,1,1,1,0,1],
+    [1,0,0,0,1,0,0,0,0,1],
+    [1,0,1,1,1,0,1,1,0,1],
+    [1,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1]
+];
+
+function drawMap() {
+    const mapDiv = document.getElementById('map');
+    mapDiv.innerHTML = ''; 
+    mapDiv.style.gridTemplateColumns = `repeat(${mapWidth}, 1fr)`;
+    mapDiv.style.gridTemplateRows = `repeat(${mapHeight}, 1fr)`;
+
+    for (let y = 0; y < mapHeight; y++) {
+        for (let x = 0; x < mapWidth; x++) {
+            const cell = document.createElement('div');
+            cell.className = mapGrid[y][x] === 1 ? 'wall' : 'floor';
+            mapDiv.appendChild(cell);
+        }
+    }
+    updatePlayerPosition();
+}
+
+function updatePlayerPosition() {
+    const cellW = 100 / mapWidth;
+    const cellH = 100 / mapHeight;
+    playerElement.style.left = `${(playerPos.x * cellW) + (cellW / 2)}%`;
+    playerElement.style.top = `${(playerPos.y * cellH) + (cellH / 2)}%`;
+}
+
+function move(direction) {
+    let newX = playerPos.x;
+    let newY = playerPos.y;
+
+    if (direction === 'up') newY--;
+    if (direction === 'down') newY++;
+    if (direction === 'left') newX--;
+    if (direction === 'right') newX++;
+
+    if (newX >= 0 && newX < mapWidth && newY >= 0 && newY < mapHeight) {
+        if (mapGrid[newY][newX] === 0) {
+            playerPos.x = newX;
+            playerPos.y = newY;
+            updatePlayerPosition();
+        }
     }
 }
