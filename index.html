@@ -28,13 +28,41 @@
 
     <!-- Экран игры (пока пустой) -->
     <div id="game-screen">
-        <!-- Сюда мы потом вставим твою игру -->
-        <div id="scene-awake" class="scene">
-    <div class="text-box">
-        <p id="dialogue-text">Вы медленно открываете глаза. Всё тело ломит от боли. Вокруг темно, слышен только скрип металла и тихое шипение воздуха...</p>
-        <button id="next-btn" onclick="nextDialogue()">Далее ▶</button>
-    </div>
+    <!-- 1. Сцена пробуждения (диалог) -->
+    <div id="scene-awake" class="scene">
+        <div class="text-box" id="dialogue-box">
+            <p id="dialogue-text"></p>
+            <button id="next-btn" onclick="nextDialogue()">Далее ▶</button>
         </div>
+    </div>
+
+    <!-- 2. Экран "Maksimozo представляет" -->
+    <div id="splash-screen" style="display: none;">
+        <h1>Maksimozo<br>представляет</h1>
+    </div>
+
+    <!-- 3. Комната с окном и турбиной (карта) -->
+    <div id="map-container" style="display: none;">
+        <div id="ship-window">
+            <div id="space-view">
+                <div class="debris debris-1"></div>
+                <div class="debris debris-2"></div>
+                <div id="turbine"></div>
+            </div>
+        </div>
+        <div id="map"></div>
+        <div id="player">👨‍🚀</div> 
+    </div>
+
+    <!-- Кнопки управления (скрыты, пока не появится карта) -->
+    <div id="controls" style="display: none;">
+        <button class="control-btn" onclick="move('up')">⬆️</button>
+        <div class="control-row">
+            <button class="control-btn" onclick="move('left')">⬅️</button>
+            <button class="control-btn" onclick="move('down')">⬇️</button>
+            <button class="control-btn" onclick="move('right')">➡️</button>
+        </div>
+    </div>
     </div>
 
     <!-- Подключаем скрипты -->
