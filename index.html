@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KOSMIK UNDERTALE</title>
-    <!-- Подключаем стили -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,12 +12,13 @@
     <canvas id="space-canvas"></canvas>
 
     <!-- Плеер для звука -->
-<audio id="bg-music" loop>
-    <source src="horror (online-audio-converter.com).mp3" type="audio/mpeg">
-</audio><!-- Главное меню -->
+    <audio id="bg-music" loop>
+        <source src="horror (online-audio-converter.com).mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Главное меню -->
     <div class="menu-wrapper" id="main-menu">
         <div class="game-title">KOSMIK<br>UNDERTALE</div>
-
         <div class="menu-buttons">
             <button class="menu-btn" onclick="action('continue')">Продолжить игру</button>
             <button class="menu-btn" onclick="action('new_game')">Начать новую</button>
@@ -26,46 +26,43 @@
         </div>
     </div>
 
-    <!-- Экран игры (пока пустой) -->
+    <!-- Экран игры -->
     <div id="game-screen">
-    <!-- 1. Сцена пробуждения (диалог) -->
-    <div id="scene-awake" class="scene">
-        <div class="text-box" id="dialogue-box">
-            <p id="dialogue-text"></p>
-            <button id="next-btn" onclick="nextDialogue()">Далее ▶</button>
-        </div>
-    </div>
-
-    <!-- 2. Экран "Maksimozo представляет" -->
-    <div id="splash-screen" style="display: none;">
-        <h1>Maksimozo<br>представляет</h1>
-    </div>
-
-    <!-- 3. Комната с окном и турбиной (карта) -->
-    <div id="map-container" style="display: none;">
-        <div id="ship-window">
-            <div id="space-view">
-                <div class="debris debris-1"></div>
-                <div class="debris debris-2"></div>
-                <div id="turbine"></div>
+        <!-- 1. Диалог -->
+        <div id="scene-awake" class="scene">
+            <div class="text-box">
+                <p id="dialogue-text">Вы медленно открываете глаза. Всё тело ломит от боли. Вокруг темно, слышен только скрип металла и тихое шипение воздуха...</p>
+                <button id="next-btn" onclick="nextDialogue()">Далее ▶</button>
             </div>
         </div>
-        <div id="map"></div>
-        <div id="player">👨‍🚀</div> 
-    </div>
 
-    <!-- Кнопки управления (скрыты, пока не появится карта) -->
-    <div id="controls" style="display: none;">
-        <button class="control-btn" onclick="move('up')">⬆️</button>
-        <div class="control-row">
-            <button class="control-btn" onclick="move('left')">⬅️</button>
-            <button class="control-btn" onclick="move('down')">⬇️</button>
-            <button class="control-btn" onclick="move('right')">➡️</button>
+        <!-- 2. Экран "Maksimozo представляет" -->
+        <div id="splash-screen" style="display: none;">
+            <h1>Maksimozo<br>представляет</h1>
+        </div>
+
+        <!-- 3. Комната с окном и турбиной -->
+        <div id="map-container" style="display: none;">
+            <div id="ship-window">
+                <div id="space-view">
+                    <div class="debris debris-1"></div>
+                    <div class="debris debris-2"></div>
+                    <div id="turbine"></div>
+                </div>
+            </div>
+            <div id="map"></div>
+            <div id="player">👨‍🚀</div> 
+        </div>
+
+        <!-- 4. Кнопки управления -->
+        <div id="controls" style="display: none;">
+            <button class="control-btn up" onclick="move('up')">▲</button>
+            <button class="control-btn left" onclick="move('left')">◀</button>
+            <button class="control-btn right" onclick="move('right')">▶</button>
+            <button class="control-btn down" onclick="move('down')">▼</button>
         </div>
     </div>
-    </div>
 
-    <!-- Подключаем скрипты -->
     <script src="menu.js"></script>
 </body>
 </html>
