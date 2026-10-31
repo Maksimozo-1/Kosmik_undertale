@@ -16,6 +16,7 @@
 
     <button id="music-toggle" onclick="toggleMusic()">🔇 Включить звук</button>
 
+    <!-- Главное меню -->
     <div class="menu-wrapper" id="main-menu">
         <div class="game-title">KOSMIK<br>UNDERTALE</div>
         <div class="menu-buttons">
@@ -25,7 +26,9 @@
         </div>
     </div>
 
+    <!-- Экран игры -->
     <div id="game-screen">
+        <!-- Диалоги -->
         <div id="scene-awake" class="scene">
             <div class="text-box">
                 <p id="dialogue-text">Вы медленно открываете глаза...</p>
@@ -33,10 +36,12 @@
             </div>
         </div>
 
+        <!-- Титры -->
         <div id="splash-screen" style="display: none;">
             <h1>Maksimozo<br>представляет</h1>
         </div>
 
+        <!-- КОМНАТА -->
         <div id="map-container" style="display: none;">
             <div id="ship-window">
                 <div id="space-view">
@@ -49,33 +54,40 @@
             
             <div class="emergency-light"></div>
             <div id="map"></div>
-            
             <img id="player" src="pixelart-9643229_1280.png" alt="Космонавт">
             <div id="rat">🐀</div>
             <div id="save-point">⭐</div>
             <div id="terminal">💻</div>
         </div>
 
+        <!-- БОЕВОЙ ЭКРАН -->
         <div id="battle-screen" style="display: none;">
+            <!-- Эффект разреза -->
+            <div id="slash-effect" style="display: none;"></div>
+
             <div id="enemy-area">
                 <div id="enemy-hp-bar"><div id="enemy-hp-fill"></div></div>
                 <div id="enemy">🐀</div>
             </div>
+
             <div id="battle-ui">
                 <div id="player-stats">
                     <span>Космонавт</span>
                     <span>HP <span id="player-hp">20</span> / 20</span>
                 </div>
+
                 <div id="battle-menu">
                     <button class="battle-btn" onclick="playerAttack()">⚔️ АТАКА</button>
                     <button class="battle-btn" onclick="alert('Вы осматриваетесь. Крыса выглядит зараженной.')">🔍 ДЕЙСТВИЕ</button>
                     <button class="battle-btn" onclick="alert('У вас нет предметов.')">🎒 ПРЕДМЕТ</button>
                     <button class="battle-btn" onclick="alert('Крыса не хочет мириться.')">🕊️ ПОЩАДА</button>
                 </div>
+
                 <div id="battle-text">Что будете делать?</div>
             </div>
         </div>
 
+        <!-- Управление -->
         <div id="controls" style="display: none;">
             <div id="joystick-area">
                 <div id="joystick-base">
@@ -83,10 +95,9 @@
                 </div>
             </div>
             <div id="action-buttons">
+                <button class="action-btn" id="btn-z" onclick="handleActionC()">Z</button>
                 <button class="action-btn" id="btn-x">X</button>
-                <button class="action-btn" id="btn-y">Y</button>
-                <button class="action-btn" id="btn-b">B</button>
-                <button class="action-btn" id="btn-c" onclick="handleActionC()">C</button>
+                <button class="action-btn" id="btn-c">C</button>
             </div>
         </div>
     </div>
