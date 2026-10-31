@@ -78,9 +78,14 @@ function nextDialogue() {
         setTimeout(() => {
             gameScreen.classList.add('flash-effect');
             setTimeout(() => {
-                gameScreen.classList.remove('flash-effect'); document.getElementById('scene-awake').style.display = 'none'; document.getElementById('splash-screen').style.display = 'flex';
+                gameScreen.classList.remove('flash-effect'); 
+                document.getElementById('scene-awake').style.display = 'none'; 
+                document.getElementById('splash-screen').style.display = 'flex';
                 setTimeout(() => {
-                    document.getElementById('splash-screen').style.display = 'none'; document.getElementById('map-container').style.display = 'block'; document.getElementById('controls').style.display = 'flex'; drawMap();
+                    document.getElementById('splash-screen').style.display = 'none'; 
+                    document.getElementById('map-container').style.display = 'block'; 
+                    document.getElementById('controls').style.display = 'flex'; 
+                    drawMap();
                 }, 2500);
             }, 1500);
         }, 1000);
@@ -146,4 +151,86 @@ function handleMove(e) {
     if (distance > maxDist) { dx = (dx / distance) * maxDist; dy = (dy / distance) * maxDist; }
     joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
     if (distance > 15) {
-        let dir = ''; if (Math
+        let dir = ''; if (Math.abs(dx) > Math.abs(dy)) { dir = dx > 0 ? 'right' : 'left'; } else { dir = dy > 0 ? 'down' : 'up'; }
+        if (dir !== currentDirection) { currentDirection = dir; clearInterval(moveTimer); move(dir); moveTimer = setInterval(() => move(dir), 200); }
+    } else { clearInterval(moveTimer); currentDirection = null; }
+}
+function handleEnd() { isDragging = false; joystickStick.style.transform = `translate(-50%, -50%)`; clearInterval(moveTimer); currentDirection = null; }
+joystickArea.addEventListener('touchstart', handleStart, { passive: false }); joystickArea.addEventListener('touchmove', handleMove, { passive: false });
+joystickArea.addEventListener('touchend', handleEnd);
+
+// --- 6. БОЕВАЯ СИСТЕМА ---
+let playerHP = 20, enemyHP = 100, isPlayerTurn = true;
+let attackAnimationFrame;
+
+function startRatEncounter() {
+    document.getElementById('controls').style.display = 'none';
+    document.getElementById('map-container').style.display = 'none';
+    document.getElementById('battle-screen').style.display = 'flex';
+    playerHP = 20; enemyHP = 100;
+    document.getElementById('player-hp').textContent = playerHP;
+    document.getElementById('enemy-hp-fill').style.width = '100%';
+    document.getElementById('battle-text').textContent = "Из темноты на вас бросается зараженная крыса!";
+    isPlayerTurn = true;
+}
+
+function playerAttack() {
+    if (!isPlayerTurn) return;
+    isPlayerTurn = false;
+    
+    const attackBtn = document.querySelector('.battle-btn:nth-child(1)');
+    attackBtn.textContent = "⚔️ РАЗРЕЗ!";
+    document.getElementById('battle-text').textContent = "Нажмите РАЗРЕЗ, чтобы атаковать!";
+    
+    attackBtn.onclick = function() {
+        attackBtn.onclick = playerAttack;
+        attackBtn.textContent = "⚔️ АТАКА";
+        
+        const slash = document.getElementById('slash-effect');
+        slash.style.display = 'block';
+        slash.style.animation = 'none'; 
+        void slash.offsetWidth; 
+        slash.style.animation = 'slash-anim 0.3s ease-out forwards';
+        setTimeout(() => { slash.style.display = 'none'; }, 500);
+
+        let damage = Math.floor(Math.random() * 20) + 15; 
+        enemyHP -= damage;
+        if (enemyHP < 0) enemyHP = 0;
+        
+        document.getElementById('enemy-hp-fill').style.width = `${enemyHP}%`;
+        document.getElementById('battle-text').textContent = `Вы рассекли крысу! Урон: ${damage}.`;
+        
+        if (enemyHP <= 0) {
+            setTimeout(() => {
+                document.getElementById('battle-text').textContent = "Вы победили! Крыса рассыпалась в пыль...";
+                setTimeout(() => {
+                    document.getElementById('battle-screen').style.display = 'none';
+                    document.getElementById('map-container').style.display = 'block';
+                    document.getElementById('controls').style.display = 'flex';
+                    ratPos = { x: -1, y: -1 }; 
+                    alert("Вы победили! (Продолжение следует...)");
+                }, 3000);
+            }, 1000);
+            return;
+        }
+        setTimeout(enemyTurn, 1500);
+    };
+}
+
+function enemyTurn() {
+    document.getElementById('battle-text').textContent = "Крыса кусает вас!";
+    setTimeout(() => {
+        const damage = Math.floor(Math.random() * 5) + 2;
+        playerHP -= damage; if (playerHP < 0) playerHP = 0;
+        document.getElementById('player-hp').textContent = playerHP;
+        document.getElementById('battle-text').textContent = `Крыса нанесла вам ${damage} урона!`;
+        
+        if (playerHP <= 0) {
+            document.getElementById('battle-text').textContent = "Вы погибли...";
+            setTimeout(() => location.reload(), 3000);
+            return;
+        }
+        isPlayerTurn = true;
+        setTimeout(() => { document.getElementById('battle-text').textContent = "Ваш ход!"; }, 1000);
+    }, 1000);
+            }
