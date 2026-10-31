@@ -11,10 +11,13 @@
     <!-- Фон космоса -->
     <canvas id="space-canvas"></canvas>
 
-    <!-- Плеер для звука (Убедись, что название файла совпадает с твоим!) -->
+    <!-- Плеер для звука (Название твоего файла) -->
     <audio id="bg-music" loop>
         <source src="horror (online-audio-converter.com).mp3" type="audio/mpeg">
     </audio>
+
+    <!-- Кнопка звука -->
+    <button id="music-toggle" onclick="toggleMusic()">🔇 Включить звук</button>
 
     <!-- Главное меню -->
     <div class="menu-wrapper" id="main-menu">
@@ -31,7 +34,7 @@
         <!-- 1. Диалог -->
         <div id="scene-awake" class="scene">
             <div class="text-box">
-                <p id="dialogue-text">Вы медленно открываете глаза. Всё тело ломит от боли. Вокруг темно, слышен только скрип металла и тихое шипение воздуха...</p>
+                <p id="dialogue-text">Вы медленно открываете глаза...</p>
                 <button id="next-btn" onclick="nextDialogue()">Далее ▶</button>
             </div>
         </div>
@@ -52,9 +55,10 @@
             </div>
             <div id="map"></div>
             <div id="player">👨‍🚀</div> 
+            <div id="rat">🐀</div>
         </div>
 
-        <!-- 4. Кнопки -->
+        <!-- 4. Кнопки управления -->
         <div id="controls" style="display: none;">
             <button class="control-btn up" onclick="move('up')">▲</button>
             <button class="control-btn left" onclick="move('left')">◀</button>
