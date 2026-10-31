@@ -1,4 +1,4 @@
-// --- 1. КОСМОС И ЧЕРНАЯ ДЫРА (МЕНЮ) ---
+// --- 1. КОСМОС И ЧЕРНАЯ ДЫРА ---
 const canvas = document.getElementById('space-canvas');
 const ctx = canvas.getContext('2d');
 let stars = [], width, height, time = 0;
@@ -22,6 +22,12 @@ function animate() {
     ctx.beginPath(); ctx.arc(cx, cy, r * 1.02, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255, 240, 200, 0.9)'; ctx.lineWidth = 2; ctx.stroke();
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.PI / 12); ctx.scale(1, 0.3);
     ctx.beginPath(); ctx.arc(0, 0, r * 1.3, 0, Math.PI); ctx.strokeStyle = 'rgba(255, 200, 100, 0.8)'; ctx.lineWidth = 15; ctx.stroke(); ctx.restore();
+    for (let i = 0; i < 40; i++) {
+        const angle = time * 2 + (i * Math.PI * 2) / 40; const dist = r * (1.1 + Math.sin(time * 3 + i) * 0.2);
+        const px = Math.cos(angle) * dist, py = Math.sin(angle) * dist * 0.3;
+        const finalX = cx + px * Math.cos(Math.PI / 12) - py * Math.sin(Math.PI / 12); const finalY = cy + px * Math.sin(Math.PI / 12) + py * Math.cos(Math.PI / 12);
+        ctx.beginPath(); ctx.arc(finalX, finalY, Math.random() * 1.5 + 0.5, 0, Math.PI * 2); ctx.fillStyle = `rgba(255, 180, 50, ${Math.max(0, 1 - (dist / (r * 2)))})`; ctx.fill();
+    }
     stars.forEach(star => {
         star.x -= star.speed; star.alpha += star.twinkleSpeed;
         if (star.alpha > 1 || star.alpha < 0.2) star.twinkleSpeed *= -1;
@@ -138,11 +144,4 @@ function handleMove(e) {
     const clientX = e.touches ? e.touches[0].clientX : e.clientX, clientY = e.touches ? e.touches[0].clientY : e.clientY;
     let dx = clientX - joyCenter.x, dy = clientY - joyCenter.y; const distance = Math.sqrt(dx * dx + dy * dy), maxDist = 40; 
     if (distance > maxDist) { dx = (dx / distance) * maxDist; dy = (dy / distance) * maxDist; }
-    joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-    if (distance > 15) {
-        let dir = ''; if (Math.abs(dx) > Math.abs(dy)) { dir = dx > 0 ? 'right' : 'left'; } else { dir = dy > 0 ? 'down' : 'up'; }
-        if (dir !== currentDirection) { currentDirection = dir; clearInterval(moveTimer); move(dir); moveTimer = setInterval(() => move(dir), 200); }
-    } else { clearInterval(moveTimer); currentDirection = null; }
-}
-function handleEnd() { isDragging = false; joystickStick.style.transform = `translate(-50%, -50%)`; clearInterval(moveTimer); currentDirection = null; }
-joystickArea.addEventListener('touchstart', handleStart, { passive: false }); joystickArea.addEventListener('touchmove', handleMove, {
+    joyst
