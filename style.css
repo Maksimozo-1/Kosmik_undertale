@@ -105,7 +105,7 @@ body, html {
 
 /* --- БОЕВОЙ ЭКРАН --- */
 #battle-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000; z-index: 500; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; font-family: 'Press Start 2P', monospace; }
-#enemy-area { text-align: center; margin-top: 5vh; position: relative; z-index: 5; }
+#enemy-area { text-align: center; margin-top: 5vh; position: relative; z-index: 5; display: flex; flex-direction: column; align-items: center; }
 #enemy { font-size: 80px; animation: pulse 1s infinite alternate; }
 #enemy-hp-bar { width: 200px; height: 15px; background: #333; margin: 0 auto 10px; border: 2px solid #fff; }
 #enemy-hp-fill { width: 100%; height: 100%; background: #00ff00; transition: width 0.3s; }
@@ -118,10 +118,17 @@ body, html {
 #battle-text { color: #fff; text-align: center; font-size: 1rem; min-height: 30px; margin-top: 10px; }
 
 /* --- ЭФФЕКТ РАЗРЕЗА --- */
-#slash-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.1); z-index: 10; pointer-events: none; }
-#slash-effect::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 10px; background: linear-gradient(90deg, transparent, #ff0000, #ffffff, #ff0000, transparent); box-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000; transform: rotate(-45deg) scaleX(0); }
-@keyframes slash-anim { 0% { transform: rotate(-45deg) scaleX(0); opacity: 1; } 50% { transform: rotate(-45deg) scaleX(1); opacity: 1; } 100% { transform: rotate(-45deg) scaleX(1); opacity: 0; } }
-
-@media (orientation: landscape) {
-    #map-container { width: 100vw; height: 100vh; margin: 0; }
-             }
+#slash-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.1); z-index: 10; pointer-events: none; opacity: 0; }
+#slash-effect.active { animation: slash-anim 0.4s ease-out forwards; }
+@keyframes slash-anim { 
+    0% { opacity: 1; background: rgba(255, 0, 0, 0.4); }
+    50% { opacity: 1; background: rgba(255, 255, 255, 0.8); }
+    100% { opacity: 0; background: rgba(255, 0, 0, 0); }
+}
+#slash-effect::after { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 8px; background: #ff0000; box-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000; transform: scaleX(0); }
+#slash-effect.active::after { animation: slash-line 0.4s ease-out forwards; }
+@keyframes slash-line {
+    0% { transform: scaleX(0) rotate(-45deg); }
+    50% { transform: scaleX(1) rotate(-45deg); }
+    100% { transform: scaleX(1) rotate(-45deg); opacity: 0; }
+            }
