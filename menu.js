@@ -1,23 +1,23 @@
-// menu.js — KOSMIK UNDERTALE (финальная версия для мобилок)
+// menu.js — KOSMIK UNDERTALE (версия с отладкой и принудительным поиском кнопок)
 (() => {
   'use strict';
 
+  console.log("=== ЗАГРУЗКА KOSMIK MENU ===");
   const $ = (s, r = document) => r.querySelector(s);
-  const menuScreen = $('#menu-screen') || $('#menu') || document.body;
 
-  // ---------- КАНВАСЫ (Звёзды и Чёрная дыра) ----------
+  // ---------- 1. ЗВЁЗДЫ И ЧЁРНАЯ ДЫРА ----------
   function ensureCanvas(id) {
     let c = document.getElementById(id);
     if (!c) {
       c = document.createElement('canvas');
       c.id = id;
-      menuScreen.prepend(c);
+      document.body.insertBefore(c, document.body.firstChild);
     }
     c.style.position = 'fixed';
     c.style.inset = '0';
     c.style.width = '100%';
     c.style.height = '100%';
-    c.style.pointerEvents = 'none'; // Пропускаем клики сквозь канвас
+    c.style.pointerEvents = 'none'; 
     return c;
   }
 
@@ -26,7 +26,7 @@
   const bhCanvas = ensureCanvas('blackhole-canvas');
   bhCanvas.style.zIndex = '1';
 
-  let W = 0, H = 0;
+  let W = window.innerWidth, H = window.innerHeight;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
   function resize() {
@@ -41,43 +41,30 @@
   resize();
   window.addEventListener('resize', resize);
 
-  // ---------- ЗВЁЗДЫ ----------
-  const STAR_COUNT = Math.max(120, Math.floor((W * H) / 4000));
-  const stars = [];
-  for (let i = 0; i < STAR_COUNT; i++) {
-    stars.push({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: Math.random() * 1.6 + 0.2,
-      a: Math.random() * 0.6 + 0.3,
-      tw: Math.random() * 0.02 + 0.005,
-      phase: Math.random() * Math.PI * 2
-    });
-  }
+  const stars = Array.from({ length: 150 }, () => ({
+    x: Math.random() * W, y: Math.random() * H,
+    r: Math.random() * 1.5 + 0.2, a: Math.random() * 0.6 + 0.3,
+    tw: Math.random() * 0.02 + 0.005, phase: Math.random() * Math.PI * 2
+  }));
 
-  // ---------- ЧЁРНАЯ ДЫРА ----------
   const bh = { x: W / 2, y: H * 0.45, r: Math.min(W, H) * 0.18, angle: 0 };
   const starsCtx = starsCanvas.getContext('2d');
   const bhCtx = bhCanvas.getContext('2d');
 
-  function drawStars(t) {
+  function loop(t) {
+    const ts = t / 1000;
+    // Звёзды
     starsCtx.clearRect(0, 0, W, H);
-    for (const s of stars) {
-      starsCtx.globalAlpha = Math.max(0.05, Math.min(1, s.a + Math.sin(t * s.tw + s.phase) * 0.3));
+    stars.forEach(s => {
+      starsCtx.globalAlpha = Math.max(0.05, Math.min(1, s.a + Math.sin(ts * s.tw + s.phase) * 0.3));
       starsCtx.fillStyle = '#fff';
-      starsCtx.beginPath();
-      starsCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      starsCtx.fill();
-    }
+      starsCtx.beginPath(); starsCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2); starsCtx.fill();
+    });
     starsCtx.globalAlpha = 1;
-  }
 
-  function drawBlackHole() {
+    // Чёрная дыра
     bhCtx.clearRect(0, 0, W, H);
-    bh.x = W / 2;
-    bh.y = H * 0.45;
-    bh.angle += 0.01;
-
+    bh.x = W / 2; bh.y = H * 0.45; bh.angle += 0.01;
     for (let i = 0; i < 6; i++) {
       const rr = bh.r * (1.2 + i * 0.15);
       bhCtx.beginPath();
@@ -86,35 +73,22 @@
       bhCtx.ellipse(bh.x, bh.y, rr, rr * 0.35, bh.angle + i * 0.3, 0, Math.PI * 2);
       bhCtx.stroke();
     }
-
     const glow = bhCtx.createRadialGradient(bh.x, bh.y, bh.r * 0.8, bh.x, bh.y, bh.r * 2.2);
     glow.addColorStop(0, 'rgba(120, 60, 255, 0.35)');
     glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
     bhCtx.fillStyle = glow;
-    bhCtx.beginPath();
-    bhCtx.arc(bh.x, bh.y, bh.r * 2.2, 0, Math.PI * 2);
-    bhCtx.fill();
-
+    bhCtx.beginPath(); bhCtx.arc(bh.x, bh.y, bh.r * 2.2, 0, Math.PI * 2); bhCtx.fill();
     bhCtx.fillStyle = '#000';
-    bhCtx.beginPath();
-    bhCtx.arc(bh.x, bh.y, bh.r, 0, Math.PI * 2);
-    bhCtx.fill();
-
+    bhCtx.beginPath(); bhCtx.arc(bh.x, bh.y, bh.r, 0, Math.PI * 2); bhCtx.fill();
     bhCtx.strokeStyle = 'rgba(200, 140, 255, 0.9)';
     bhCtx.lineWidth = 2;
-    bhCtx.beginPath();
-    bhCtx.arc(bh.x, bh.y, bh.r + 2, 0, Math.PI * 2);
-    bhCtx.stroke();
-  }
+    bhCtx.beginPath(); bhCtx.arc(bh.x, bh.y, bh.r + 2, 0, Math.PI * 2); bhCtx.stroke();
 
-  function loop(t) {
-    drawStars(t / 1000);
-    drawBlackHole();
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
 
-  // ---------- АУДИО ----------
+  // ---------- 2. МУЗЫКА ----------
   let audio = $('#menu-audio') || $('audio');
   if (!audio) {
     audio = document.createElement('audio');
@@ -127,46 +101,36 @@
 
   let audioCtx;
   function playMusic() {
-    if (!audioCtx) {
-      try {
+    console.log("Попытка включить звук...");
+    try {
+      if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const source = audioCtx.createMediaElementSource(audio);
         const filter = audioCtx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.value = 800;
         source.connect(filter).connect(audioCtx.destination);
-      } catch (e) { console.warn('Audio filter failed:', e); }
-    }
-    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-    audio.play().catch(() => {});
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      audio.play().catch(e => console.log("Ошибка аудио:", e));
+    } catch (e) { console.log("Ошибка фильтра:", e); }
   }
 
-  // ---------- ТРЯСКА И ПЕРЕХОД ----------
+  // ---------- 3. ПЕРЕХОД И ТРЯСКА ----------
   if (!document.getElementById('kosmik-shake-style')) {
     const st = document.createElement('style');
     st.id = 'kosmik-shake-style';
-    st.textContent = `@keyframes shake {
-      0%{transform:translate(0,0)} 25%{transform:translate(-4px,3px)}
-      50%{transform:translate(3px,-4px)} 75%{transform:translate(-3px,-2px)}
-      100%{transform:translate(0,0)}
-    }`;
+    st.textContent = `@keyframes shake { 0%{transform:translate(0,0)} 25%{transform:translate(-4px,3px)} 50%{transform:translate(3px,-4px)} 75%{transform:translate(-3px,-2px)} 100%{transform:translate(0,0)} }`;
     document.head.appendChild(st);
   }
 
   function showTitleAndStart() {
+    console.log("ЗАПУСК ПЕРЕХОДА...");
     let overlay = $('#transition-overlay');
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'transition-overlay';
-      overlay.style.cssText = `
-        position: fixed; inset: 0; z-index: 9999;
-        background: #000; color: #fff;
-        display: flex; align-items: center; justify-content: center;
-        font-family: 'Press Start 2P', monospace, sans-serif;
-        font-size: clamp(14px, 4vw, 28px);
-        letter-spacing: 2px; text-align: center;
-        opacity: 0; transition: opacity 0.6s; padding: 20px;
-      `;
+      overlay.style.cssText = `position: fixed; inset: 0; z-index: 9999; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace, sans-serif; font-size: clamp(14px, 4vw, 28px); letter-spacing: 2px; text-align: center; opacity: 0; transition: opacity 0.6s; padding: 20px;`;
       document.body.appendChild(overlay);
     }
     overlay.textContent = 'Maksimozo представляет';
@@ -178,12 +142,12 @@
       overlay.style.opacity = '0';
       setTimeout(() => {
         overlay.remove();
-        // Запускаем игру (твою комнату)
         if (typeof window.startGame === 'function') {
           window.startGame();
         } else {
           const room = $('#room-screen') || $('#room');
-          if (menuScreen) menuScreen.style.display = 'none';
+          const menu = $('#menu-screen') || $('#menu');
+          if (menu) menu.style.display = 'none';
           if (room) room.style.display = 'block';
           window.dispatchEvent(new CustomEvent('kosmik:start'));
         }
@@ -191,38 +155,79 @@
     }, 2200);
   }
 
-  // ---------- ОБРАБОТКА КНОПОК (ИСПРАВЛЕНО) ----------
-  // Используем pointerdown, чтобы мгновенно реагировать на тапы по экрану телефона
-  document.addEventListener('pointerdown', (e) => {
-    // Ищем ближайший элемент, по которому тапнули (div, p, span, button)
-    const el = e.target.closest('button, a, div, p, span');
-    if (!el) return;
+  // ---------- 4. АГРЕССИВНЫЙ ПОИСК КНОПОК ----------
+  function bindButtons() {
+    console.log("Ищем кнопки на экране...");
+    
+    // Находим ВСЕ элементы на странице (div, p, span, button)
+    const elements = document.querySelectorAll('div, p, span, button, a');
+    
+    elements.forEach(el => {
+      // Пропускаем контейнеры, у которых есть вложенные элементы (чтобы не срабатывало дважды)
+      if (el.children.length > 0 && el.tagName !== 'BUTTON') return;
 
-    // Берем текст элемента (например, "❤️ Начать новую") и переводим в нижний регистр
-    const text = (el.textContent || '').trim().toLowerCase();
+      const text = (el.textContent || '').trim().toLowerCase();
+      if (!text) return;
 
-    // Если нажали на "Включить звук"
-    if (text.includes('включить звук')) {
+      // Если нашли текст кнопки — принудительно делаем её кликабельной
+      if (text.includes('включить звук')) {
+        makeClickable(el, () => {
+          playMusic();
+          el.style.display = 'none';
+        });
+      } 
+      else if (text.includes('продолжить') || text.includes('начать новую')) {
+        makeClickable(el, () => {
+          playMusic();
+          showTitleAndStart();
+        });
+      } 
+      else if (text.includes('настройки')) {
+        makeClickable(el, () => {
+          alert('Настройки в разработке');
+        });
+      }
+    });
+  }
+
+  // Вспомогательная функция: делает элемент кликабельным и поднимает его наверх
+  function makeClickable(el, callback) {
+    console.log("Кнопка найдена и активирована:", el.textContent.trim());
+    
+    // Принудительно поднимаем z-index, чтобы чёрная дыра не перекрывала клик
+    el.style.position = 'relative';
+    el.style.zIndex = '100';
+    el.style.cursor = 'pointer';
+    el.style.pointerEvents = 'auto';
+
+    // Визуальный отклик при нажатии
+    el.addEventListener('pointerdown', (e) => {
       e.preventDefault();
-      playMusic();
-      el.style.display = 'none'; // Прячем кнопку после включения
-      return;
-    }
+      e.stopPropagation();
+      el.style.transform = 'scale(0.95)'; // Эффект нажатия
+      setTimeout(() => el.style.transform = 'scale(1)', 100);
+    });
 
-    // Если нажали на "Начать новую" или "Продолжить игру"
-    if (text.includes('продолжить') || text.includes('начать') || text.includes('start') || text.includes('play')) {
+    // Основной обработчик
+    el.addEventListener('click', (e) => {
       e.preventDefault();
-      playMusic();
-      showTitleAndStart();
-      return;
-    }
+      e.stopPropagation();
+      console.log("КЛИК ПО КНОПКЕ:", el.textContent.trim());
+      callback();
+    });
+    
+    // Для мобилок
+    el.addEventListener('touchstart', (e) => {
+      e.preventDefault(); // Убираем задержку
+      callback();
+    }, { passive: false });
+  }
 
-    // Если нажали на "Настройки"
-    if (text.includes('настройки') || text.includes('settings')) {
-      e.preventDefault();
-      alert('Настройки (в разработке)');
-      return;
-    }
-  });
+  // Запускаем поиск кнопок после полной загрузки страницы
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindButtons);
+  } else {
+    bindButtons();
+  }
 
 })();
