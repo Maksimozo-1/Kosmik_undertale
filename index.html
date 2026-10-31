@@ -41,15 +41,16 @@
             <h1>Maksimozo<br>представляет</h1>
         </div>
 
-        <!-- ПОЛНОЭКРАННАЯ КОМНАТА -->
+        <!-- КОМНАТА -->
         <div id="map-container" style="display: none;">
-            <!-- Окно с космосом -->
+            <!-- Уменьшенное окно с планетой -->
             <div id="ship-window">
                 <div id="space-view">
                     <div class="planet"></div>
-                    <div class="debris debris-1"></div>
-                    <div class="debris debris-2"></div>
-                    <div class="debris debris-3"></div>
+                    <!-- Обломки корабля на планете -->
+                    <div class="wreckage wreckage-1"></div>
+                    <div class="wreckage wreckage-2"></div>
+                    <!-- Разбитое стекло -->
                     <div class="broken-glass"></div>
                 </div>
             </div>
@@ -60,7 +61,7 @@
             <div id="map"></div>
             
             <!-- Персонажи и объекты -->
-            <img id="player" src="pixelart-9643229_1280.png" alt="Космонавт">
+            <img id="player" src="idle.png" alt="Космонавт">
             <div id="rat">🐀</div>
             <div id="save-point">⭐</div>
             <div id="terminal">💻</div>
@@ -78,6 +79,30 @@
                 <button class="action-btn" id="btn-y">Y</button>
                 <button class="action-btn" id="btn-b">B</button>
                 <button class="action-btn" id="btn-c" onclick="handleActionC()">C</button>
+            </div>
+        </div>
+
+        <!-- БОЕВОЙ ЭКРАН -->
+        <div id="battle-screen" style="display: none;">
+            <div id="enemy-area">
+                <div id="enemy-hp-bar"><div id="enemy-hp-fill"></div></div>
+                <div id="enemy">🐀</div>
+            </div>
+
+            <div id="battle-ui">
+                <div id="player-stats">
+                    <span>Космонавт</span>
+                    <span>HP <span id="player-hp">20</span> / 20</span>
+                </div>
+
+                <div id="battle-menu">
+                    <button class="battle-btn" onclick="playerAttack()">⚔️ АТАКА</button>
+                    <button class="battle-btn" onclick="alert('Вы осматриваетесь. Крыса выглядит зараженной.')">🔍 ДЕЙСТВИЕ</button>
+                    <button class="battle-btn" onclick="alert('У вас нет предметов.')">🎒 ПРЕДМЕТ</button>
+                    <button class="battle-btn" onclick="alert('Крыса не хочет мириться.')">🕊️ ПОЩАДА</button>
+                </div>
+
+                <div id="battle-text">Что будете делать?</div>
             </div>
         </div>
     </div>
