@@ -62,7 +62,8 @@
 
         <!-- БОЕВОЙ ЭКРАН -->
         <div id="battle-screen" style="display: none;">
-            <div id="slash-effect" style="display: none;"></div>
+            <!-- Эффект разреза -->
+            <div id="slash-effect"></div>
 
             <div id="enemy-area">
                 <div id="enemy-hp-bar"><div id="enemy-hp-fill"></div></div>
@@ -75,11 +76,12 @@
                     <span>HP <span id="player-hp">20</span> / 20</span>
                 </div>
 
+                <!-- Обновленные кнопки боя -->
                 <div id="battle-menu">
                     <button class="battle-btn" onclick="playerAttack()">⚔️ АТАКА</button>
-                    <button class="battle-btn" onclick="alert('Вы осматриваетесь. Крыса выглядит зараженной.')">🔍 ДЕЙСТВИЕ</button>
-                    <button class="battle-btn" onclick="alert('У вас нет предметов.')">🎒 ПРЕДМЕТ</button>
-                    <button class="battle-btn" onclick="alert('Крыса не хочет мириться.')">🕊️ ПОЩАДА</button>
+                    <button class="battle-btn" onclick="showBattleText('Вы осматриваетесь. Крыса выглядит зараженной.')">🔍 ДЕЙСТВИЕ</button>
+                    <button class="battle-btn" onclick="showBattleText('У вас нет предметов.')">🎒 ПРЕДМЕТ</button>
+                    <button class="battle-btn" onclick="showBattleText('Крыса не хочет мириться.')">🕊️ ПОЩАДА</button>
                 </div>
 
                 <div id="battle-text">Что будете делать?</div>
