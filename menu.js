@@ -1,233 +1,193 @@
-// menu.js — KOSMIK UNDERTALE (версия с отладкой и принудительным поиском кнопок)
-(() => {
-  'use strict';
+// ==========================================
+// KOSMIK UNDERTALE - ПОЛНЫЙ СКРИПТ
+// ==========================================
 
-  console.log("=== ЗАГРУЗКА KOSMIK MENU ===");
-  const $ = (s, r = document) => r.querySelector(s);
+window.addEventListener('DOMContentLoaded', () => {
+  console.log("=== СКРИПТ ЗАГРУЖЕН ===");
 
-  // ---------- 1. ЗВЁЗДЫ И ЧЁРНАЯ ДЫРА ----------
-  function ensureCanvas(id) {
-    let c = document.getElementById(id);
-    if (!c) {
-      c = document.createElement('canvas');
-      c.id = id;
-      document.body.insertBefore(c, document.body.firstChild);
-    }
-    c.style.position = 'fixed';
-    c.style.inset = '0';
-    c.style.width = '100%';
-    c.style.height = '100%';
-    c.style.pointerEvents = 'none'; 
-    return c;
-  }
+  // 1. НАСТРОЙКА КАНВАСА (ФОН)
+  const canvas = document.getElementById('space-canvas');
+  let W, H;
+  
+  // Делаем канвас фоном на весь экран
+  if (canvas) {
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100vw';
+    canvas.style.height = '100vh';
+    canvas.style.zIndex = '-1'; // Уводим на задний план
+    canvas.style.pointerEvents = 'none';
+    
+    const ctx = canvas.getContext('2d');
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
 
-  const starsCanvas = ensureCanvas('stars-canvas');
-  starsCanvas.style.zIndex = '0';
-  const bhCanvas = ensureCanvas('blackhole-canvas');
-  bhCanvas.style.zIndex = '1';
+    const stars = Array.from({ length: 150 }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: Math.random() * 1.5 + 0.2, a: Math.random() * 0.6 + 0.3,
+      tw: Math.random() * 0.02 + 0.005, phase: Math.random() * Math.PI * 2
+    }));
 
-  let W = window.innerWidth, H = window.innerHeight;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let bhAngle = 0;
+    function drawSpace() {
+      ctx.clearRect(0, 0, W, H);
+      stars.forEach(s => {
+        ctx.globalAlpha = Math.max(0.05, Math.min(1, s.a + Math.sin(Date.now() * 0.001 * s.tw + s.phase) * 0.3));
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
 
-  function resize() {
-    W = window.innerWidth;
-    H = window.innerHeight;
-    [starsCanvas, bhCanvas].forEach(c => {
-      c.width = W * dpr;
-      c.height = H * dpr;
-      c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
-    });
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  const stars = Array.from({ length: 150 }, () => ({
-    x: Math.random() * W, y: Math.random() * H,
-    r: Math.random() * 1.5 + 0.2, a: Math.random() * 0.6 + 0.3,
-    tw: Math.random() * 0.02 + 0.005, phase: Math.random() * Math.PI * 2
-  }));
-
-  const bh = { x: W / 2, y: H * 0.45, r: Math.min(W, H) * 0.18, angle: 0 };
-  const starsCtx = starsCanvas.getContext('2d');
-  const bhCtx = bhCanvas.getContext('2d');
-
-  function loop(t) {
-    const ts = t / 1000;
-    // Звёзды
-    starsCtx.clearRect(0, 0, W, H);
-    stars.forEach(s => {
-      starsCtx.globalAlpha = Math.max(0.05, Math.min(1, s.a + Math.sin(ts * s.tw + s.phase) * 0.3));
-      starsCtx.fillStyle = '#fff';
-      starsCtx.beginPath(); starsCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2); starsCtx.fill();
-    });
-    starsCtx.globalAlpha = 1;
-
-    // Чёрная дыра
-    bhCtx.clearRect(0, 0, W, H);
-    bh.x = W / 2; bh.y = H * 0.45; bh.angle += 0.01;
-    for (let i = 0; i < 6; i++) {
-      const rr = bh.r * (1.2 + i * 0.15);
-      bhCtx.beginPath();
-      bhCtx.strokeStyle = `rgba(150, 80, 255, ${0.15 - i * 0.02})`;
-      bhCtx.lineWidth = 2 + i;
-      bhCtx.ellipse(bh.x, bh.y, rr, rr * 0.35, bh.angle + i * 0.3, 0, Math.PI * 2);
-      bhCtx.stroke();
-    }
-    const glow = bhCtx.createRadialGradient(bh.x, bh.y, bh.r * 0.8, bh.x, bh.y, bh.r * 2.2);
-    glow.addColorStop(0, 'rgba(120, 60, 255, 0.35)');
-    glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    bhCtx.fillStyle = glow;
-    bhCtx.beginPath(); bhCtx.arc(bh.x, bh.y, bh.r * 2.2, 0, Math.PI * 2); bhCtx.fill();
-    bhCtx.fillStyle = '#000';
-    bhCtx.beginPath(); bhCtx.arc(bh.x, bh.y, bh.r, 0, Math.PI * 2); bhCtx.fill();
-    bhCtx.strokeStyle = 'rgba(200, 140, 255, 0.9)';
-    bhCtx.lineWidth = 2;
-    bhCtx.beginPath(); bhCtx.arc(bh.x, bh.y, bh.r + 2, 0, Math.PI * 2); bhCtx.stroke();
-
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
-
-  // ---------- 2. МУЗЫКА ----------
-  let audio = $('#menu-audio') || $('audio');
-  if (!audio) {
-    audio = document.createElement('audio');
-    audio.id = 'menu-audio';
-    audio.src = 'horror (online-audio-converter.com).mp3';
-    document.body.appendChild(audio);
-  }
-  audio.loop = true;
-  audio.volume = 0.5;
-
-  let audioCtx;
-  function playMusic() {
-    console.log("Попытка включить звук...");
-    try {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const source = audioCtx.createMediaElementSource(audio);
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 800;
-        source.connect(filter).connect(audioCtx.destination);
+      const bhX = W / 2, bhY = H * 0.4, bhR = Math.min(W, H) * 0.18;
+      bhAngle += 0.01;
+      for (let i = 0; i < 6; i++) {
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(150, 80, 255, ${0.15 - i * 0.02})`;
+        ctx.lineWidth = 2 + i;
+        ctx.ellipse(bhX, bhY, bhR * (1.2 + i * 0.15), bhR * 0.35 * (1.2 + i * 0.15), bhAngle + i * 0.3, 0, Math.PI * 2);
+        ctx.stroke();
       }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      audio.play().catch(e => console.log("Ошибка аудио:", e));
-    } catch (e) { console.log("Ошибка фильтра:", e); }
+      const glow = ctx.createRadialGradient(bhX, bhY, bhR * 0.8, bhX, bhY, bhR * 2.2);
+      glow.addColorStop(0, 'rgba(120, 60, 255, 0.35)');
+      glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(bhX, bhY, bhR * 2.2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.beginPath(); ctx.arc(bhX, bhY, bhR, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(200, 140, 255, 0.9)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(bhX, bhY, bhR + 2, 0, Math.PI * 2); ctx.stroke();
+
+      requestAnimationFrame(drawSpace);
+    }
+    requestAnimationFrame(drawSpace);
+    
+    window.addEventListener('resize', () => {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    });
   }
 
-  // ---------- 3. ПЕРЕХОД И ТРЯСКА ----------
-  if (!document.getElementById('kosmik-shake-style')) {
+  // 2. МУЗЫКА
+  const audio = document.getElementById('bg-music');
+  const musicBtn = document.getElementById('music-toggle');
+  let audioCtx, source, filter;
+
+  if (musicBtn) {
+    musicBtn.onclick = null; // Убираем старый onclick из HTML
+    musicBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          source = audioCtx.createMediaElementSource(audio);
+          filter = audioCtx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = 800;
+          source.connect(filter).connect(audioCtx.destination);
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        
+        if (audio.paused) {
+          audio.play();
+          musicBtn.textContent = '🔊 Выключить звук';
+        } else {
+          audio.pause();
+          musicBtn.textContent = '🔇 Включить звук';
+        }
+      } catch (err) {
+        console.log("Ошибка аудио:", err);
+      }
+    });
+  }
+
+  // 3. ПЕРЕХОД ИЗ МЕНЮ В ИГРУ
+  const mainMenu = document.getElementById('main-menu');
+  const gameScreen = document.getElementById('game-screen');
+  const splashScreen = document.getElementById('splash-screen');
+  const mapContainer = document.getElementById('map-container');
+  const controls = document.getElementById('controls');
+
+  // Добавляем CSS-анимацию тряски
+  if (!document.getElementById('shake-style')) {
     const st = document.createElement('style');
-    st.id = 'kosmik-shake-style';
+    st.id = 'shake-style';
     st.textContent = `@keyframes shake { 0%{transform:translate(0,0)} 25%{transform:translate(-4px,3px)} 50%{transform:translate(3px,-4px)} 75%{transform:translate(-3px,-2px)} 100%{transform:translate(0,0)} }`;
     document.head.appendChild(st);
   }
 
-  function showTitleAndStart() {
-    console.log("ЗАПУСК ПЕРЕХОДА...");
-    let overlay = $('#transition-overlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'transition-overlay';
-      overlay.style.cssText = `position: fixed; inset: 0; z-index: 9999; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace, sans-serif; font-size: clamp(14px, 4vw, 28px); letter-spacing: 2px; text-align: center; opacity: 0; transition: opacity 0.6s; padding: 20px;`;
-      document.body.appendChild(overlay);
-    }
-    overlay.textContent = 'Maksimozo представляет';
-    overlay.style.opacity = '1';
-    document.body.style.animation = 'shake 0.4s linear infinite';
+  // Ищем все кнопки меню (Начать, Продолжить)
+  const menuButtons = document.querySelectorAll('.menu-btn');
+  
+  menuButtons.forEach(btn => {
+    btn.onclick = null; // Убираем встроенный onclick, чтобы он не перезагружал страницу
+    btn.setAttribute('type', 'button'); // Защита от отправки формы
 
-    setTimeout(() => {
-      document.body.style.animation = '';
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-        overlay.remove();
-        if (typeof window.startGame === 'function') {
-          window.startGame();
-        } else {
-          const room = $('#room-screen') || $('#room');
-          const menu = $('#menu-screen') || $('#menu');
-          if (menu) menu.style.display = 'none';
-          if (room) room.style.display = 'block';
-          window.dispatchEvent(new CustomEvent('kosmik:start'));
-        }
-      }, 600);
-    }, 2200);
-  }
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation(); // Останавливаем всплытие событий
+      
+      console.log("Нажата кнопка меню!");
 
-  // ---------- 4. АГРЕССИВНЫЙ ПОИСК КНОПОК ----------
-  function bindButtons() {
-    console.log("Ищем кнопки на экране...");
-    
-    // Находим ВСЕ элементы на странице (div, p, span, button)
-    const elements = document.querySelectorAll('div, p, span, button, a');
-    
-    elements.forEach(el => {
-      // Пропускаем контейнеры, у которых есть вложенные элементы (чтобы не срабатывало дважды)
-      if (el.children.length > 0 && el.tagName !== 'BUTTON') return;
-
-      const text = (el.textContent || '').trim().toLowerCase();
-      if (!text) return;
-
-      // Если нашли текст кнопки — принудительно делаем её кликабельной
-      if (text.includes('включить звук')) {
-        makeClickable(el, () => {
-          playMusic();
-          el.style.display = 'none';
-        });
-      } 
-      else if (text.includes('продолжить') || text.includes('начать новую')) {
-        makeClickable(el, () => {
-          playMusic();
-          showTitleAndStart();
-        });
-      } 
-      else if (text.includes('настройки')) {
-        makeClickable(el, () => {
-          alert('Настройки в разработке');
-        });
+      // Включаем музыку при первом клике (если выключена)
+      if (audio && audio.paused) {
+        audio.play().catch(()=>{});
+        if (musicBtn) musicBtn.textContent = '🔊 Выключить звук';
       }
+
+      // СКРЫВАЕМ МЕНЮ
+      if (mainMenu) mainMenu.style.display = 'none';
+
+      // ПОКАЗЫВАЕМ КОНТЕЙНЕР ИГРЫ И ЗАСТАВКУ
+      if (gameScreen) gameScreen.style.display = 'block';
+      if (splashScreen) splashScreen.style.display = 'flex';
+      
+      document.body.style.animation = 'shake 0.4s linear infinite';
+
+      // ЧЕРЕЗ 2 СЕКУНДЫ УБИРАЕМ ЗАСТАВКУ И ПОКАЗЫВАЕМ КАРТУ
+      setTimeout(() => {
+        console.log("Показываем карту...");
+        document.body.style.animation = '';
+        
+        if (splashScreen) splashScreen.style.display = 'none';
+        if (mapContainer) mapContainer.style.display = 'block';
+        
+        // Показываем джойстик и кнопки
+        if (controls) controls.style.display = 'flex'; 
+      }, 2000);
+    });
+  });
+
+  // 4. БОЙ (КЛИК ПО КРЫСЕ)
+  const rat = document.getElementById('rat');
+  const battleScreen = document.getElementById('battle-screen');
+  
+  if (rat && battleScreen && mapContainer) {
+    rat.addEventListener('click', () => {
+      mapContainer.style.display = 'none';
+      battleScreen.style.display = 'flex';
     });
   }
 
-  // Вспомогательная функция: делает элемент кликабельным и поднимает его наверх
-  function makeClickable(el, callback) {
-    console.log("Кнопка найдена и активирована:", el.textContent.trim());
-    
-    // Принудительно поднимаем z-index, чтобы чёрная дыра не перекрывала клик
-    el.style.position = 'relative';
-    el.style.zIndex = '100';
-    el.style.cursor = 'pointer';
-    el.style.pointerEvents = 'auto';
+  // 5. АТАКА (РАЗРЕЗ)
+  const battleBtns = document.querySelectorAll('.battle-btn');
+  const slashEffect = document.getElementById('slash-effect');
 
-    // Визуальный отклик при нажатии
-    el.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      el.style.transform = 'scale(0.95)'; // Эффект нажатия
-      setTimeout(() => el.style.transform = 'scale(1)', 100);
-    });
+  battleBtns.forEach(btn => {
+    btn.onclick = null;
+    if (btn.textContent.includes('Атака') || btn.textContent.includes('АТАКА')) {
+      btn.addEventListener('click', () => {
+        if (slashEffect) {
+          slashEffect.style.display = 'block';
+          slashEffect.style.opacity = '1';
+          setTimeout(() => {
+            slashEffect.style.opacity = '0';
+            setTimeout(() => slashEffect.style.display = 'none', 300);
+          }, 300);
+        }
+      });
+    }
+  });
 
-    // Основной обработчик
-    el.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log("КЛИК ПО КНОПКЕ:", el.textContent.trim());
-      callback();
-    });
-    
-    // Для мобилок
-    el.addEventListener('touchstart', (e) => {
-      e.preventDefault(); // Убираем задержку
-      callback();
-    }, { passive: false });
-  }
-
-  // Запускаем поиск кнопок после полной загрузки страницы
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bindButtons);
-  } else {
-    bindButtons();
-  }
-
-})();
+});
