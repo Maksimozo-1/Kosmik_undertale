@@ -144,4 +144,8 @@ function handleMove(e) {
     const clientX = e.touches ? e.touches[0].clientX : e.clientX, clientY = e.touches ? e.touches[0].clientY : e.clientY;
     let dx = clientX - joyCenter.x, dy = clientY - joyCenter.y; const distance = Math.sqrt(dx * dx + dy * dy), maxDist = 40; 
     if (distance > maxDist) { dx = (dx / distance) * maxDist; dy = (dy / distance) * maxDist; }
-    joyst
+    joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    if (distance > 15) {
+        let dir = ''; if (Math.abs(dx) > Math.abs(dy)) { dir = dx > 0 ? 'right' : 'left'; } else { dir = dy > 0 ? 'down' : 'up'; }
+        if (dir !== currentDirection) { currentDirection = dir; clearInterval(moveTimer); move(dir); moveTimer = setInterval(() => move(dir), 200); }
+    } else { clear
