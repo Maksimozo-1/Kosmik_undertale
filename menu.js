@@ -1,150 +1,245 @@
-// --- 1. КОСМОС И ЧЕРНАЯ ДЫРА ---
-const canvas = document.getElementById('space-canvas');
-const ctx = canvas.getContext('2d');
-let stars = [], width, height, time = 0;
+// menu.js — KOSMIK UNDERTALE (полная версия)
+(() => {
+  'use strict';
 
-function resizeCanvas() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; createStars(); }
-function createStars() {
-    stars = []; const starCount = Math.floor((width * height) / 8000); 
-    for (let i = 0; i < starCount; i++) { stars.push({ x: Math.random() * width, y: Math.random() * height, radius: Math.random() * 1.5 + 0.5, speed: Math.random() * 0.5 + 0.1, alpha: Math.random() * 0.8 + 0.2, twinkleSpeed: Math.random() * 0.02 + 0.01 }); }
-}
-function animate() {
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, width, height);
-    time += 0.005; const cx = width / 2, cy = height / 2, r = Math.min(width, height) * 0.18;
-    let glow = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 3);
-    glow.addColorStop(0, 'rgba(255, 120, 0, 0.4)'); glow.addColorStop(0.4, 'rgba(255, 50, 0, 0.1)'); glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cx, cy, r * 3, 0, Math.PI * 2); ctx.fill();
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.PI / 12); ctx.scale(1, 0.3);
-    let diskGrad = ctx.createRadialGradient(0, 0, r * 0.8, 0, 0, r * 2.5);
-    diskGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)'); diskGrad.addColorStop(0.2, 'rgba(255, 200, 50, 0.8)'); diskGrad.addColorStop(0.6, 'rgba(255, 80, 0, 0.3)'); diskGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.beginPath(); ctx.arc(0, 0, r * 2.5, 0, Math.PI * 2); ctx.fillStyle = diskGrad; ctx.fill(); ctx.restore();
-    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#000'; ctx.fill();
-    ctx.beginPath(); ctx.arc(cx, cy, r * 1.02, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255, 240, 200, 0.9)'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.PI / 12); ctx.scale(1, 0.3);
-    ctx.beginPath(); ctx.arc(0, 0, r * 1.3, 0, Math.PI); ctx.strokeStyle = 'rgba(255, 200, 100, 0.8)'; ctx.lineWidth = 15; ctx.stroke(); ctx.restore();
-    for (let i = 0; i < 40; i++) {
-        const angle = time * 2 + (i * Math.PI * 2) / 40; const dist = r * (1.1 + Math.sin(time * 3 + i) * 0.2);
-        const px = Math.cos(angle) * dist, py = Math.sin(angle) * dist * 0.3;
-        const finalX = cx + px * Math.cos(Math.PI / 12) - py * Math.sin(Math.PI / 12); const finalY = cy + px * Math.sin(Math.PI / 12) + py * Math.cos(Math.PI / 12);
-        ctx.beginPath(); ctx.arc(finalX, finalY, Math.random() * 1.5 + 0.5, 0, Math.PI * 2); ctx.fillStyle = `rgba(255, 180, 50, ${Math.max(0, 1 - (dist / (r * 2)))})`; ctx.fill();
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const menuScreen = $('#menu-screen') || $('#menu') || document.body;
+
+  // ---------- КАНВАСЫ ----------
+  function ensureCanvas(id) {
+    let c = document.getElementById(id);
+    if (!c) {
+      c = document.createElement('canvas');
+      c.id = id;
+      menuScreen.prepend(c);
     }
-    stars.forEach(star => {
-        star.x -= star.speed; star.alpha += star.twinkleSpeed;
-        if (star.alpha > 1 || star.alpha < 0.2) star.twinkleSpeed *= -1;
-        if (star.x < 0) { star.x = width; star.y = Math.random() * height; }
-        ctx.beginPath(); ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2); ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`; ctx.fill();
+    c.style.position = 'fixed';
+    c.style.inset = '0';
+    c.style.width = '100%';
+    c.style.height = '100%';
+    c.style.pointerEvents = 'none';
+    return c;
+  }
+
+  const starsCanvas = ensureCanvas('stars-canvas');
+  starsCanvas.style.zIndex = '0';
+  const bhCanvas = ensureCanvas('blackhole-canvas');
+  bhCanvas.style.zIndex = '1';
+
+  let W = 0, H = 0;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    [starsCanvas, bhCanvas].forEach(c => {
+      c.width = W * dpr;
+      c.height = H * dpr;
+      c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
     });
-    requestAnimationFrame(animate);
-}
-window.addEventListener('resize', resizeCanvas); resizeCanvas(); animate();
+  }
+  resize();
+  window.addEventListener('resize', resize);
 
-// --- 2. МУЗЫКА И МЕНЮ ---
-const music = document.getElementById('bg-music'), musicBtn = document.getElementById('music-toggle');
-let audioCtx, sourceNode, filterNode, isPlaying = false;
-function toggleMusic() {
-    if (isPlaying) { music.pause(); musicBtn.textContent = '🔇 Включить звук'; isPlaying = false; } 
-    else {
-        if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); sourceNode = audioCtx.createMediaElementSource(music); filterNode = audioCtx.createBiquadFilter(); filterNode.type = 'lowpass'; filterNode.frequency.value = 1200; sourceNode.connect(filterNode); filterNode.connect(audioCtx.destination); }
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        music.volume = 1.0; music.play().then(() => { musicBtn.textContent = '🔊 Выключить звук'; isPlaying = true; }).catch(e => alert("Ошибка звука: " + e.message));
+  // ---------- ЗВЁЗДЫ ----------
+  const STAR_COUNT = Math.max(120, Math.floor((W * H) / 4000));
+  const stars = [];
+  for (let i = 0; i < STAR_COUNT; i++) {
+    stars.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.6 + 0.2,
+      a: Math.random() * 0.6 + 0.3,
+      tw: Math.random() * 0.02 + 0.005,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+
+  // ---------- ЧЁРНАЯ ДЫРА ----------
+  const bh = { x: W / 2, y: H * 0.45, r: Math.min(W, H) * 0.18, angle: 0 };
+
+  const starsCtx = starsCanvas.getContext('2d');
+  const bhCtx = bhCanvas.getContext('2d');
+
+  function drawStars(t) {
+    starsCtx.clearRect(0, 0, W, H);
+    for (const s of stars) {
+      starsCtx.globalAlpha = Math.max(0.05, Math.min(1, s.a + Math.sin(t * s.tw + s.phase) * 0.3));
+      starsCtx.fillStyle = '#fff';
+      starsCtx.beginPath();
+      starsCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      starsCtx.fill();
     }
-}
-function action(command) {
-    if (command === 'new_game') {
-        if (music) music.pause(); 
-        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e => console.log(e));
-        if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(e => console.log(e));
-        document.getElementById('main-menu').style.display = 'none'; document.getElementById('music-toggle').style.display = 'none';
-        document.getElementById('game-screen').style.display = 'flex'; canvas.style.display = 'none'; currentLine = 0;
-    } else if (command === 'continue') { alert("Сохранений нет!"); } else { alert("В разработке!"); }
-}
+    starsCtx.globalAlpha = 1;
+  }
 
-// --- 3. ДИАЛОГИ ---
-const dialogueLines = [
-    "Вы медленно открываете глаза. Всё тело ломит от боли. Вокруг темно, слышен только скрип металла и тихое шипение воздуха...",
-    "Вы пытаетесь вспомнить, что произошло. Вспышка. Черная дыра. Крик команды. А потом — тишина.",
-    "Вы с трудом поднимаетесь на ноги. Кажется, вы на какой-то неизвестной планете. В иллюминаторе виден странный, фиолетовый свет.",
-    "Внезапно, вы слышите странный звук за спиной. Вы не одни..."
-];
-let currentLine = 0;
-const textElement = document.getElementById('dialogue-text'), btn = document.getElementById('next-btn');
+  function drawBlackHole() {
+    bhCtx.clearRect(0, 0, W, H);
+    bh.x = W / 2;
+    bh.y = H * 0.45;
+    bh.angle += 0.01;
 
-function nextDialogue() {
-    currentLine++;
-    if (currentLine < dialogueLines.length) { textElement.textContent = dialogueLines[currentLine]; } 
-    else {
-        textElement.textContent = "Продолжение следует..."; btn.style.display = 'none';
-        const gameScreen = document.getElementById('game-screen');
-        setTimeout(() => {
-            gameScreen.classList.add('flash-effect');
-            setTimeout(() => {
-                gameScreen.classList.remove('flash-effect'); document.getElementById('scene-awake').style.display = 'none'; document.getElementById('splash-screen').style.display = 'flex';
-                setTimeout(() => {
-                    document.getElementById('splash-screen').style.display = 'none'; document.getElementById('map-container').style.display = 'block'; document.getElementById('controls').style.display = 'flex'; drawMap();
-                }, 2500);
-            }, 1500);
-        }, 1000);
+    // аккреционный диск
+    for (let i = 0; i < 6; i++) {
+      const rr = bh.r * (1.2 + i * 0.15);
+      bhCtx.beginPath();
+      bhCtx.strokeStyle = `rgba(150, 80, 255, ${0.15 - i * 0.02})`;
+      bhCtx.lineWidth = 2 + i;
+      bhCtx.ellipse(bh.x, bh.y, rr, rr * 0.35, bh.angle + i * 0.3, 0, Math.PI * 2);
+      bhCtx.stroke();
     }
-}
 
-// --- 4. КАРТА И ДВИЖЕНИЕ ---
-const mapWidth = 10, mapHeight = 10;
-let playerPos = { x: 5, y: 8 }; 
-let ratPos = { x: 2, y: 9 }; 
-let savePos = { x: 5, y: 4 };
-let termPos = { x: 8, y: 9 };
-const playerElement = document.getElementById('player');
+    // свечение
+    const glow = bhCtx.createRadialGradient(bh.x, bh.y, bh.r * 0.8, bh.x, bh.y, bh.r * 2.2);
+    glow.addColorStop(0, 'rgba(120, 60, 255, 0.35)');
+    glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    bhCtx.fillStyle = glow;
+    bhCtx.beginPath();
+    bhCtx.arc(bh.x, bh.y, bh.r * 2.2, 0, Math.PI * 2);
+    bhCtx.fill();
 
-const mapGrid = [
-    [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,1,1,1,1,1,1,1,1,1]
-];
+    // горизонт событий
+    bhCtx.fillStyle = '#000';
+    bhCtx.beginPath();
+    bhCtx.arc(bh.x, bh.y, bh.r, 0, Math.PI * 2);
+    bhCtx.fill();
 
-function drawMap() {
-    const mapDiv = document.getElementById('map'); mapDiv.innerHTML = ''; 
-    mapDiv.style.gridTemplateColumns = `repeat(${mapWidth}, 1fr)`; mapDiv.style.gridTemplateRows = `repeat(${mapHeight}, 1fr)`;
-    for (let y = 0; y < mapHeight; y++) { for (let x = 0; x < mapWidth; x++) { const cell = document.createElement('div'); cell.className = mapGrid[y][x] === 1 ? 'wall' : 'floor'; mapDiv.appendChild(cell); } }
-    updatePlayerPosition(); updateElementPosition('rat', ratPos); updateElementPosition('save-point', savePos); updateElementPosition('terminal', termPos);
-}
-function updatePlayerPosition() { const cellW = 100 / mapWidth, cellH = 100 / mapHeight; playerElement.style.left = `${(playerPos.x * cellW) + (cellW / 2)}%`; playerElement.style.top = `${(playerPos.y * cellH) + (cellH / 2)}%`; }
-function updateElementPosition(id, pos) { const el = document.getElementById(id); const cellW = 100 / mapWidth, cellH = 100 / mapHeight; el.style.left = `${(pos.x * cellW) + (cellW / 2)}%`; el.style.top = `${(pos.y * cellH) + (cellH / 2)}%`; }
+    // световое кольцо
+    bhCtx.strokeStyle = 'rgba(200, 140, 255, 0.9)';
+    bhCtx.lineWidth = 2;
+    bhCtx.beginPath();
+    bhCtx.arc(bh.x, bh.y, bh.r + 2, 0, Math.PI * 2);
+    bhCtx.stroke();
+  }
 
-function move(direction) {
-    if (document.getElementById('scene-awake').style.display === 'flex') return;
-    let newX = playerPos.x, newY = playerPos.y;
-    if (direction === 'up') newY--; if (direction === 'down') newY++; if (direction === 'left') newX--; if (direction === 'right') newX++;
-    if (newX >= 0 && newX < mapWidth && newY >= 0 && newY < mapHeight) {
-        if (mapGrid[newY][newX] === 0) {
-            if (newX === ratPos.x && newY === ratPos.y) { startRatEncounter(); } 
-            else if (newX === savePos.x && newY === savePos.y) { playerPos.x = newX; playerPos.y = newY; updatePlayerPosition(); showMessage("Вы чувствуете, как ваша решимость крепнет. (Вы сохранились)"); } 
-            else if (newX === termPos.x && newY === termPos.y) { playerPos.x = newX; playerPos.y = newY; updatePlayerPosition(); showMessage("Терминал искрит. На экране мигает надпись: 'ОШИБКА КУРСА. МЫ НЕ ДОЛЖНЫ БЫЛИ ЛЕТЕТЬ СЮДА...'"); } 
-            else { playerPos.x = newX; playerPos.y = newY; updatePlayerPosition(); }
+  function loop(t) {
+    const ts = t / 1000;
+    drawStars(ts);
+    drawBlackHole();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // ---------- АУДИО + ФИЛЬТР ----------
+  let audio = $('#menu-audio') || $('audio');
+  if (!audio) {
+    audio = document.createElement('audio');
+    audio.id = 'menu-audio';
+    audio.src = 'horror (online-audio-converter.com).mp3';
+    document.body.appendChild(audio);
+  }
+  audio.loop = true;
+  audio.volume = 0.5;
+
+  let audioCtx, source, filter;
+  function setupAudioFilter() {
+    if (audioCtx) return;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      source = audioCtx.createMediaElementSource(audio);
+      filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 800;
+      filter.Q.value = 1;
+      source.connect(filter).connect(audioCtx.destination);
+    } catch (e) {
+      console.warn('Audio filter failed:', e);
+    }
+  }
+
+  function playMusic() {
+    setupAudioFilter();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    audio.play().catch(() => {});
+  }
+
+  // ---------- ТРЯСКА ----------
+  if (!document.getElementById('kosmik-shake-style')) {
+    const st = document.createElement('style');
+    st.id = 'kosmik-shake-style';
+    st.textContent = `@keyframes shake {
+      0%{transform:translate(0,0)}
+      25%{transform:translate(-4px,3px)}
+      50%{transform:translate(3px,-4px)}
+      75%{transform:translate(-3px,-2px)}
+      100%{transform:translate(0,0)}
+    }`;
+    document.head.appendChild(st);
+  }
+
+  // ---------- ПЕРЕХОД ----------
+  function showTitleAndStart() {
+    let overlay = $('#transition-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'transition-overlay';
+      overlay.style.cssText = `
+        position: fixed; inset: 0; z-index: 9999;
+        background: #000; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Press Start 2P', monospace, sans-serif;
+        font-size: clamp(14px, 3vw, 28px);
+        letter-spacing: 2px; text-align: center;
+        opacity: 0; transition: opacity 0.6s;
+        padding: 20px;
+      `;
+      document.body.appendChild(overlay);
+    }
+    overlay.textContent = 'Maksimozo представляет';
+    overlay.style.opacity = '1';
+    document.body.style.animation = 'shake 0.4s linear infinite';
+
+    setTimeout(() => {
+      document.body.style.animation = '';
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.remove();
+        if (typeof window.startGame === 'function') {
+          window.startGame();
+        } else {
+          const room = $('#room-screen') || $('#room');
+          if (menuScreen) menuScreen.style.display = 'none';
+          if (room) room.style.display = 'block';
+          window.dispatchEvent(new CustomEvent('kosmik:start'));
         }
+      }, 600);
+    }, 2200);
+  }
+
+  // ---------- КНОПКИ ----------
+  function bindButtons() {
+    document.addEventListener('pointerdown', playMusic, { once: true });
+
+    const startBtn =
+      $('#btn-start') || $('#start-btn') || $('.btn-start') ||
+      $('.start') || $('[data-action="start"]') || $('#play') ||
+      $$('button').find(b => /играть|старт|start|play/i.test(b.textContent));
+
+    if (startBtn) {
+      startBtn.addEventListener('click', () => {
+        playMusic();
+        showTitleAndStart();
+      });
+    } else {
+      console.warn('Кнопка старта не найдена. Добавь id="btn-start".');
     }
-}
 
-function showMessage(text) {
-    document.getElementById('controls').style.display = 'none'; document.getElementById('scene-awake').style.display = 'flex';
-    const txt = document.getElementById('dialogue-text'), b = document.getElementById('next-btn');
-    txt.textContent = text; b.style.display = 'block'; b.textContent = "Продолжить ▶";
-    b.onclick = function() { document.getElementById('scene-awake').style.display = 'none'; document.getElementById('controls').style.display = 'flex'; };
-}
+    const settingsBtn = $('#btn-settings') || $('.btn-settings');
+    if (settingsBtn) settingsBtn.addEventListener('click', () => {
+      const p = $('#settings-panel');
+      if (p) p.style.display = (p.style.display === 'none') ? 'flex' : 'none';
+    });
 
-function handleActionC() {
-    const scene = document.getElementById('scene-awake');
-    if (scene.style.display === 'flex') { const nextBtn = document.getElementById('next-btn'); if (nextBtn && nextBtn.style.display !== 'none') { nextBtn.click(); } }
-}
+    const aboutBtn = $('#btn-about') || $('.btn-about');
+    if (aboutBtn) aboutBtn.addEventListener('click', () => {
+      alert('KOSMIK UNDERTALE\nКосмонавт просыпается на неизвестной планете...');
+    });
+  }
 
-// --- 5. ДЖОЙСТИК ---
-const joystickArea = document.getElementById('joystick-area'), joystickStick = document.getElementById('joystick-stick');
-let joyCenter = { x: 0, y: 0 }, isDragging = false, moveTimer = null, currentDirection = null;
-function handleStart(e) { e.preventDefault(); const rect = joystickArea.getBoundingClientRect(); joyCenter.x = rect.left + rect.width / 2; joyCenter.y = rect.top + rect.height / 2; isDragging = true; handleMove(e); }
-function handleMove(e) {
-    if (!isDragging) return; e.preventDefault();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX, clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    let dx = clientX - joyCenter.x, dy = clientY - joyCenter.y; const distance = Math.sqrt(dx * dx + dy * dy), maxDist = 40; 
-    if (distance > maxDist) { dx = (dx / distance) * maxDist; dy = (dy / distance) * maxDist; }
-    joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-    if (distance > 15) {
-        let dir = ''; if (Math.abs(dx) > Math.abs(dy)) { dir = dx > 0 ? 'right' : 'left'; } else { dir = dy > 0 ? 'down' : 'up'; }
-        if (dir !== currentDirection)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindButtons);
+  } else {
+    bindButtons();
+  }
+})();
