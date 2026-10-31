@@ -103,6 +103,9 @@ function action(command) {
         document.getElementById('music-toggle').style.display = 'none';
         document.getElementById('game-screen').style.display = 'flex'; 
         canvas.style.display = 'none';
+        
+        // Сброс прогресса при новой игре
+        currentLine = 0;
     } else if (command === 'continue') { alert("Сохранений нет!"); } 
     else { alert("В разработке!"); }
 }
@@ -135,7 +138,7 @@ function nextDialogue() {
                 setTimeout(() => {
                     document.getElementById('splash-screen').style.display = 'none';
                     document.getElementById('map-container').style.display = 'block';
-                    document.getElementById('controls').style.display = 'flex'; // Включаем управление
+                    document.getElementById('controls').style.display = 'flex'; 
                     drawMap();
                 }, 2500);
             }, 1500);
@@ -241,8 +244,21 @@ function startRatEncounter() {
     b.onclick = function() { alert("Тут будет битва! (Скоро)"); };
 }
 
+// --- 6. УМНАЯ КНОПКА C ---
+function handleActionC() {
+    // Если открыто окно диалога, кнопка C работает как "Далее"
+    const scene = document.getElementById('scene-awake');
+    if (scene.style.display === 'flex') {
+        const nextBtn = document.getElementById('next-btn');
+        if (nextBtn && nextBtn.style.display !== 'none') {
+            nextBtn.click();
+        }
+    } 
+    // Если мы уже в комнате (диалог закрыт), кнопка C пока ничего не делает.
+}
+
 // =========================================
-// 6. ЛОГИКА ВИРТУАЛЬНОГО ДЖОЙСТИКА
+// 7. ЛОГИКА ВИРТУАЛЬНОГО ДЖОЙСТИКА
 // =========================================
 const joystickArea = document.getElementById('joystick-area');
 const joystickStick = document.getElementById('joystick-stick');
