@@ -40,7 +40,6 @@ body, html {
 }
 .menu-btn::before { content: '❤'; color: #ff0000; position: absolute; left: 10px; transition: color 0.2s; font-size: 1.2rem; }
 .menu-btn:hover, .menu-btn:focus { color: #ffff00; outline: none; }
-.menu-btn:hover::before, .menu-btn:focus::before { color: #ff0000; }
 
 /* =========================================
    3. ЭКРАН ИГРЫ, ДИАЛОГИ И ТИТРЫ
@@ -53,7 +52,6 @@ body, html {
     font-size: 1.2rem; line-height: 1.5; position: relative; pointer-events: auto;
 }
 #next-btn { position: absolute; bottom: 10px; right: 10px; background: transparent; border: none; color: #ffff00; font-family: 'Press Start 2P', monospace; font-size: 1rem; cursor: pointer; }
-#next-btn:hover { color: #ff0000; }
 
 #splash-screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
@@ -78,13 +76,10 @@ body, html {
     margin: 20px auto; border: 6px solid #222; background-color: #111;
     overflow: hidden; box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
 }
-
-/* Виньетка (затемнение по краям) */
 #map-container::after {
     content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
     box-shadow: inset 0 0 80px rgba(0,0,0,1); pointer-events: none; z-index: 15;
 }
-
 #map { display: grid; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 5; }
 
 .wall { 
@@ -145,8 +140,6 @@ body, html {
     padding: 20px 40px; box-sizing: border-box; z-index: 100;
     pointer-events: none;
 }
-
-/* Левая часть: Джойстик */
 #joystick-area {
     pointer-events: auto; width: 140px; height: 140px;
     position: relative; margin-left: 20px; margin-bottom: 20px;
@@ -166,8 +159,6 @@ body, html {
     top: 50%; left: 50%; transform: translate(-50%, -50%);
     box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.1s;
 }
-
-/* Правая часть: Кнопки действий */
 #action-buttons {
     pointer-events: auto; position: relative; width: 220px; height: 180px;
     margin-right: 20px;
@@ -179,17 +170,15 @@ body, html {
     box-shadow: inset 0 0 10px rgba(0,0,0,0.8); transition: all 0.1s; -webkit-tap-highlight-color: transparent;
 }
 .action-btn:active { background: rgba(100, 100, 100, 0.9); color: #fff; transform: scale(0.9); }
-
 #btn-y { top: 0; right: 50px; width: 60px; height: 60px; }
 #btn-x { top: 40px; right: 0px; width: 65px; height: 65px; }
 #btn-b { top: 100px; right: 10px; width: 60px; height: 60px; }
 #btn-c { top: 100px; right: 80px; width: 70px; height: 70px; }
 
 /* =========================================
-   7. ГОРИЗОНТАЛЬНЫЙ РЕЖИМ (АЛЬБОМНЫЙ)
+   7. ГОРИЗОНТАЛЬНЫЙ РЕЖИМ
    ========================================= */
 @media (orientation: landscape) {
     #game-screen { display: flex !important; flex-direction: row !important; justify-content: center !important; align-items: center !important; padding: 10px; }
     #map-container { width: 65vh; height: 85vh; margin: 0 auto; }
-    /* Центрируем комнату, управление остается по краям */
-}
+        }
