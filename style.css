@@ -90,7 +90,7 @@ body, html {
 }
 .floor { background-color: #0a0a0a; border: 1px solid #151515; }
 
-#player { position: absolute; font-size: 30px; transition: all 0.2s ease-in-out; z-index: 10; transform: translate(-50%, -50%); }
+#player { position: absolute; width: 40px; height: 40px; object-fit: contain; transition: all 0.2s ease-in-out; z-index: 10; transform: translate(-50%, -50%); image-rendering: pixelated; }
 
 #rat {
     position: absolute; font-size: 25px; z-index: 9; transform: translate(-50%, -50%);
@@ -181,4 +181,4 @@ body, html {
 @media (orientation: landscape) {
     #game-screen { display: flex !important; flex-direction: row !important; justify-content: center !important; align-items: center !important; padding: 10px; }
     #map-container { width: 65vh; height: 85vh; margin: 0 auto; }
-        }
+   }
