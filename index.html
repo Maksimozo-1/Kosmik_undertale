@@ -8,15 +8,12 @@
 </head>
 <body>
 
-    <!-- Фон космоса -->
     <canvas id="space-canvas"></canvas>
 
-    <!-- Плеер для звука (твой файл) -->
     <audio id="bg-music" loop>
         <source src="horror (online-audio-converter.com).mp3" type="audio/mpeg">
     </audio>
 
-    <!-- Кнопка звука -->
     <button id="music-toggle" onclick="toggleMusic()">🔇 Включить звук</button>
 
     <!-- Главное меню -->
@@ -31,7 +28,7 @@
 
     <!-- Экран игры -->
     <div id="game-screen">
-        <!-- 1. Диалог -->
+        <!-- Диалоги -->
         <div id="scene-awake" class="scene">
             <div class="text-box">
                 <p id="dialogue-text">Вы медленно открываете глаза...</p>
@@ -39,37 +36,43 @@
             </div>
         </div>
 
-        <!-- 2. Титры -->
+        <!-- Титры -->
         <div id="splash-screen" style="display: none;">
             <h1>Maksimozo<br>представляет</h1>
         </div>
 
-        <!-- 3. Комната -->
+        <!-- ПОЛНОЭКРАННАЯ КОМНАТА -->
         <div id="map-container" style="display: none;">
+            <!-- Окно с космосом -->
             <div id="ship-window">
                 <div id="space-view">
+                    <div class="planet"></div>
                     <div class="debris debris-1"></div>
                     <div class="debris debris-2"></div>
-                    <div id="turbine"></div>
+                    <div class="debris debris-3"></div>
+                    <div class="broken-glass"></div>
                 </div>
             </div>
+            
+            <div class="emergency-light"></div>
+
+            <!-- Сетка для ходьбы -->
             <div id="map"></div>
-            <img id="player" src="astronaut.png" alt="Космонавт">
+            
+            <!-- Персонажи и объекты -->
+            <img id="player" src="pixelart-9643229_1280.png" alt="Космонавт">
             <div id="rat">🐀</div>
             <div id="save-point">⭐</div>
             <div id="terminal">💻</div>
         </div>
 
-        <!-- 4. Управление (Джойстик и Кнопки) -->
+        <!-- Управление -->
         <div id="controls" style="display: none;">
-            <!-- Левая часть: Джойстик -->
             <div id="joystick-area">
                 <div id="joystick-base">
                     <div id="joystick-stick"></div>
                 </div>
             </div>
-
-            <!-- Правая часть: Кнопки действий -->
             <div id="action-buttons">
                 <button class="action-btn" id="btn-x">X</button>
                 <button class="action-btn" id="btn-y">Y</button>
