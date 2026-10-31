@@ -100,7 +100,8 @@ function action(command) {
         if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(e => console.log(e));
 
         document.getElementById('main-menu').style.display = 'none';
-        document.getElementById('game-screen').style.display = 'flex'; // Включаем flex для горизонта
+        document.getElementById('music-toggle').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'flex'; 
         canvas.style.display = 'none';
     } else if (command === 'continue') { alert("Сохранений нет!"); } 
     else { alert("В разработке!"); }
@@ -134,7 +135,7 @@ function nextDialogue() {
                 setTimeout(() => {
                     document.getElementById('splash-screen').style.display = 'none';
                     document.getElementById('map-container').style.display = 'block';
-                    document.getElementById('controls').style.display = 'grid';
+                    document.getElementById('controls').style.display = 'flex'; // Включаем управление
                     drawMap();
                 }, 2500);
             }, 1500);
@@ -146,8 +147,9 @@ function nextDialogue() {
 const mapWidth = 10, mapHeight = 10;
 let playerPos = { x: 5, y: 5 };
 let ratPos = { x: 2, y: 7 }; 
+let savePos = { x: 5, y: 2 };
+let termPos = { x: 8, y: 7 };
 const playerElement = document.getElementById('player');
-const ratElement = document.getElementById('rat');
 
 const mapGrid = [
     [1,1,1,1,1,1,1,1,1,1], [1,0,0,1,0,0,1,0,0,1], [1,0,0,0,0,1,0,0,1,1], [1,1,0,1,1,1,1,1,0,1],
@@ -168,7 +170,9 @@ function drawMap() {
         }
     }
     updatePlayerPosition();
-    updateRatPosition();
+    updateElementPosition('rat', ratPos);
+    updateElementPosition('save-point', savePos);
+    updateElementPosition('terminal', termPos);
 }
 
 function updatePlayerPosition() {
@@ -177,13 +181,17 @@ function updatePlayerPosition() {
     playerElement.style.top = `${(playerPos.y * cellH) + (cellH / 2)}%`;
 }
 
-function updateRatPosition() {
+function updateElementPosition(id, pos) {
+    const el = document.getElementById(id);
     const cellW = 100 / mapWidth, cellH = 100 / mapHeight;
-    ratElement.style.left = `${(ratPos.x * cellW) + (cellW / 2)}%`;
-    ratElement.style.top = `${(ratPos.y * cellH) + (cellH / 2)}%`;
+    el.style.left = `${(pos.x * cellW) + (cellW / 2)}%`;
+    el.style.top = `${(pos.y * cellH) + (cellH / 2)}%`;
 }
 
 function move(direction) {
+    // Если открыт диалог, не даем двигаться
+    if (document.getElementById('scene-awake').style.display === 'flex') return;
+
     let newX = playerPos.x, newY = playerPos.y;
     if (direction === 'up') newY--;
     if (direction === 'down') newY++;
@@ -194,6 +202,12 @@ function move(direction) {
         if (mapGrid[newY][newX] === 0) {
             if (newX === ratPos.x && newY === ratPos.y) {
                 startRatEncounter();
+            } else if (newX === savePos.x && newY === savePos.y) {
+                playerPos.x = newX; playerPos.y = newY; updatePlayerPosition();
+                showMessage("Вы чувствуете, как ваша решимость крепнет. (Вы сохранились)");
+            } else if (newX === termPos.x && newY === termPos.y) {
+                playerPos.x = newX; playerPos.y = newY; updatePlayerPosition();
+                showMessage("Терминал искрит. На экране мигает надпись: 'ОШИБКА КУРСА. МЫ НЕ ДОЛЖНЫ БЫЛИ ЛЕТЕТЬ СЮДА...'");
             } else {
                 playerPos.x = newX; playerPos.y = newY; updatePlayerPosition();
             }
@@ -201,16 +215,102 @@ function move(direction) {
     }
 }
 
-// --- 6. ВСТРЕЧА С КРЫСОЙ ---
+function showMessage(text) {
+    document.getElementById('controls').style.display = 'none';
+    document.getElementById('scene-awake').style.display = 'flex';
+    const txt = document.getElementById('dialogue-text');
+    const b = document.getElementById('next-btn');
+    txt.textContent = text;
+    b.style.display = 'block';
+    b.textContent = "Продолжить ▶";
+    b.onclick = function() {
+        document.getElementById('scene-awake').style.display = 'none';
+        document.getElementById('controls').style.display = 'flex';
+    };
+}
+
 function startRatEncounter() {
     document.getElementById('controls').style.display = 'none';
     document.getElementById('scene-awake').style.display = 'flex';
-    const textElement = document.getElementById('dialogue-text');
-    const btn = document.getElementById('next-btn');
+    const txt = document.getElementById('dialogue-text');
+    const b = document.getElementById('next-btn');
     
-    textElement.textContent = "Из темноты на вас бросается зараженная крыса! Её глаза светятся красным, а движения неестественны...";
-    btn.style.display = 'block';
-    btn.textContent = "В БОЙ! ⚔️";
+    txt.textContent = "Из темноты на вас бросается зараженная крыса! Её глаза светятся красным...";
+    b.style.display = 'block';
+    b.textContent = "В БОЙ! ⚔️";
+    b.onclick = function() { alert("Тут будет битва! (Скоро)"); };
+}
+
+// =========================================
+// 6. ЛОГИКА ВИРТУАЛЬНОГО ДЖОЙСТИКА
+// =========================================
+const joystickArea = document.getElementById('joystick-area');
+const joystickStick = document.getElementById('joystick-stick');
+let joyCenter = { x: 0, y: 0 };
+let isDragging = false;
+let moveTimer = null;
+let currentDirection = null;
+
+function handleStart(e) {
+    e.preventDefault();
+    const rect = joystickArea.getBoundingClientRect();
+    joyCenter.x = rect.left + rect.width / 2;
+    joyCenter.y = rect.top + rect.height / 2;
+    isDragging = true;
+    handleMove(e);
+}
+
+function handleMove(e) {
+    if (!isDragging) return;
+    e.preventDefault();
     
-    btn.onclick = function() { alert("Тут будет битва! (Скоро)"); };
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    let dx = clientX - joyCenter.x;
+    let dy = clientY - joyCenter.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const maxDist = 40; 
+
+    if (distance > maxDist) {
+        dx = (dx / distance) * maxDist;
+        dy = (dy / distance) * maxDist;
     }
+
+    joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+
+    if (distance > 15) {
+        let dir = '';
+        if (Math.abs(dx) > Math.abs(dy)) {
+            dir = dx > 0 ? 'right' : 'left';
+        } else {
+            dir = dy > 0 ? 'down' : 'up';
+        }
+
+        if (dir !== currentDirection) {
+            currentDirection = dir;
+            clearInterval(moveTimer);
+            move(dir); 
+            moveTimer = setInterval(() => move(dir), 200); 
+        }
+    } else {
+        clearInterval(moveTimer);
+        currentDirection = null;
+    }
+}
+
+function handleEnd() {
+    isDragging = false;
+    joystickStick.style.transform = `translate(-50%, -50%)`; 
+    clearInterval(moveTimer);
+    currentDirection = null;
+}
+
+joystickArea.addEventListener('touchstart', handleStart, { passive: false });
+joystickArea.addEventListener('touchmove', handleMove, { passive: false });
+joystickArea.addEventListener('touchend', handleEnd);
+joystickArea.addEventListener('touchcancel', handleEnd);
+
+joystickArea.addEventListener('mousedown', handleStart);
+window.addEventListener('mousemove', handleMove);
+window.addEventListener('mouseup', handleEnd);
