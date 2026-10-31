@@ -31,36 +31,23 @@ function animate() {
     const cy = height / 2;
     const r = Math.min(width, height) * 0.18;
 
-    // Свечение
     let glow = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 3);
-    glow.addColorStop(0, 'rgba(255, 120, 0, 0.4)');
-    glow.addColorStop(0.4, 'rgba(255, 50, 0, 0.1)');
-    glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = glow;
-    ctx.beginPath(); ctx.arc(cx, cy, r * 3, 0, Math.PI * 2); ctx.fill();
+    glow.addColorStop(0, 'rgba(255, 120, 0, 0.4)'); glow.addColorStop(0.4, 'rgba(255, 50, 0, 0.1)'); glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cx, cy, r * 3, 0, Math.PI * 2); ctx.fill();
 
-    // Диск
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.PI / 12); ctx.scale(1, 0.3);
     let diskGrad = ctx.createRadialGradient(0, 0, r * 0.8, 0, 0, r * 2.5);
-    diskGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-    diskGrad.addColorStop(0.2, 'rgba(255, 200, 50, 0.8)');
-    diskGrad.addColorStop(0.6, 'rgba(255, 80, 0, 0.3)');
-    diskGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    diskGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)'); diskGrad.addColorStop(0.2, 'rgba(255, 200, 50, 0.8)'); diskGrad.addColorStop(0.6, 'rgba(255, 80, 0, 0.3)'); diskGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.beginPath(); ctx.arc(0, 0, r * 2.5, 0, Math.PI * 2); ctx.fillStyle = diskGrad; ctx.fill();
     ctx.restore();
 
-    // Черный круг
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = '#000'; ctx.fill();
-
-    // Фотонное кольцо
     ctx.beginPath(); ctx.arc(cx, cy, r * 1.02, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255, 240, 200, 0.9)'; ctx.lineWidth = 2; ctx.stroke();
 
-    // Передняя часть диска
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.PI / 12); ctx.scale(1, 0.3);
     ctx.beginPath(); ctx.arc(0, 0, r * 1.3, 0, Math.PI); ctx.strokeStyle = 'rgba(255, 200, 100, 0.8)'; ctx.lineWidth = 15; ctx.stroke();
     ctx.restore();
 
-    // Частицы
     for (let i = 0; i < 40; i++) {
         const angle = time * 2 + (i * Math.PI * 2) / 40;
         const dist = r * (1.1 + Math.sin(time * 3 + i) * 0.2);
@@ -70,7 +57,6 @@ function animate() {
         ctx.beginPath(); ctx.arc(finalX, finalY, Math.random() * 1.5 + 0.5, 0, Math.PI * 2); ctx.fillStyle = `rgba(255, 180, 50, ${Math.max(0, 1 - (dist / (r * 2)))})`; ctx.fill();
     }
 
-    // Звезды
     stars.forEach(star => {
         star.x -= star.speed; star.alpha += star.twinkleSpeed;
         if (star.alpha > 1 || star.alpha < 0.2) star.twinkleSpeed *= -1;
@@ -85,35 +71,39 @@ animate();
 
 // --- 2. МУЗЫКА С ФИЛЬТРОМ ---
 const music = document.getElementById('bg-music');
-let audioCtx, sourceNode, filterNode, isPlaying = false, isGameStarted = false;
+const musicBtn = document.getElementById('music-toggle');
+let audioCtx, sourceNode, filterNode, isPlaying = false;
 
-document.body.addEventListener('click', () => {
-    if (!isPlaying && !isGameStarted && music) {
+function toggleMusic() {
+    if (isPlaying) {
+        music.pause(); musicBtn.textContent = '🔇 Включить звук'; isPlaying = false;
+    } else {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             sourceNode = audioCtx.createMediaElementSource(music);
             filterNode = audioCtx.createBiquadFilter();
-            filterNode.type = 'lowpass';
-            filterNode.frequency.value = 500; // Убирает шорох
+            filterNode.type = 'lowpass'; filterNode.frequency.value = 1200;
             sourceNode.connect(filterNode); filterNode.connect(audioCtx.destination);
         }
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        music.volume = 0.6;
-        music.play().then(() => isPlaying = true).catch(e => console.log(e));
+        music.volume = 1.0;
+        music.play().then(() => { musicBtn.textContent = '🔊 Выключить звук'; isPlaying = true; }).catch(e => alert("Ошибка звука: " + e.message));
     }
-}, { once: true });
+}
 
 // --- 3. МЕНЮ ---
 function action(command) {
     if (command === 'new_game') {
-        isGameStarted = true;
-        if (music) { music.pause(); music.currentTime = 0; }
+        if (music) music.pause(); 
+        
+        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e => console.log(e));
+        if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(e => console.log(e));
+
         document.getElementById('main-menu').style.display = 'none';
-        document.getElementById('game-screen').style.display = 'block';
+        document.getElementById('game-screen').style.display = 'flex'; // Включаем flex для горизонта
         canvas.style.display = 'none';
-    } else if (command === 'continue') {
-        alert("Сохранений нет!");
-    } else { alert("В разработке!"); }
+    } else if (command === 'continue') { alert("Сохранений нет!"); } 
+    else { alert("В разработке!"); }
 }
 
 // --- 4. ДИАЛОГИ ---
@@ -152,10 +142,13 @@ function nextDialogue() {
     }
 }
 
-// --- 5. КАРТА ---
+// --- 5. КАРТА И ДВИЖЕНИЕ ---
 const mapWidth = 10, mapHeight = 10;
 let playerPos = { x: 5, y: 5 };
+let ratPos = { x: 2, y: 7 }; 
 const playerElement = document.getElementById('player');
+const ratElement = document.getElementById('rat');
+
 const mapGrid = [
     [1,1,1,1,1,1,1,1,1,1], [1,0,0,1,0,0,1,0,0,1], [1,0,0,0,0,1,0,0,1,1], [1,1,0,1,1,1,1,1,0,1],
     [1,0,0,0,0,0,0,0,0,1], [1,1,1,0,1,1,1,1,0,1], [1,0,0,0,1,0,0,0,0,1], [1,0,1,1,1,0,1,1,0,1],
@@ -175,6 +168,7 @@ function drawMap() {
         }
     }
     updatePlayerPosition();
+    updateRatPosition();
 }
 
 function updatePlayerPosition() {
@@ -183,15 +177,40 @@ function updatePlayerPosition() {
     playerElement.style.top = `${(playerPos.y * cellH) + (cellH / 2)}%`;
 }
 
+function updateRatPosition() {
+    const cellW = 100 / mapWidth, cellH = 100 / mapHeight;
+    ratElement.style.left = `${(ratPos.x * cellW) + (cellW / 2)}%`;
+    ratElement.style.top = `${(ratPos.y * cellH) + (cellH / 2)}%`;
+}
+
 function move(direction) {
     let newX = playerPos.x, newY = playerPos.y;
     if (direction === 'up') newY--;
     if (direction === 'down') newY++;
     if (direction === 'left') newX--;
     if (direction === 'right') newX++;
+    
     if (newX >= 0 && newX < mapWidth && newY >= 0 && newY < mapHeight) {
         if (mapGrid[newY][newX] === 0) {
-            playerPos.x = newX; playerPos.y = newY; updatePlayerPosition();
+            if (newX === ratPos.x && newY === ratPos.y) {
+                startRatEncounter();
+            } else {
+                playerPos.x = newX; playerPos.y = newY; updatePlayerPosition();
+            }
         }
     }
 }
+
+// --- 6. ВСТРЕЧА С КРЫСОЙ ---
+function startRatEncounter() {
+    document.getElementById('controls').style.display = 'none';
+    document.getElementById('scene-awake').style.display = 'flex';
+    const textElement = document.getElementById('dialogue-text');
+    const btn = document.getElementById('next-btn');
+    
+    textElement.textContent = "Из темноты на вас бросается зараженная крыса! Её глаза светятся красным, а движения неестественны...";
+    btn.style.display = 'block';
+    btn.textContent = "В БОЙ! ⚔️";
+    
+    btn.onclick = function() { alert("Тут будет битва! (Скоро)"); };
+    }
