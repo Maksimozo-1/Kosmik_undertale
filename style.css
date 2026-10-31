@@ -8,6 +8,15 @@ body, html {
 }
 #space-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
+/* --- КНОПКА ЗВУКА --- */
+#music-toggle {
+    position: absolute; top: 20px; right: 20px; z-index: 100;
+    background: rgba(0, 0, 0, 0.7); border: 2px solid #b366ff;
+    color: #b366ff; padding: 10px 15px; font-family: 'Press Start 2P', monospace;
+    font-size: 0.8rem; cursor: pointer; border-radius: 5px; transition: all 0.2s;
+}
+#music-toggle:hover, #music-toggle:active { background: #b366ff; color: #000; }
+
 /* --- МЕНЮ --- */
 .menu-wrapper {
     position: relative; z-index: 2; display: flex; flex-direction: column;
@@ -26,15 +35,13 @@ body, html {
     transition: all 0.2s; display: flex; justify-content: center; align-items: center;
     position: relative; text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
 }
-.menu-btn::before { content: '❤'; color: transparent; position: absolute; left: 10px; transition: color 0.2s; font-size: 1.2rem; }
+.menu-btn::before { content: '❤'; color: #ff0000; position: absolute; left: 10px; transition: color 0.2s; font-size: 1.2rem; }
 .menu-btn:hover, .menu-btn:focus { color: #ffff00; outline: none; }
 .menu-btn:hover::before, .menu-btn:focus::before { color: #ff0000; }
 
-/* --- ЭКРАН ИГРЫ --- */
+/* --- ЭКРАН ИГРЫ И ДИАЛОГИ --- */
 #game-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background-color: #000; }
-
-/* --- ДИАЛОГИ --- */
-.scene { display: flex; justify-content: center; align-items: flex-end; height: 100vh; padding-bottom: 50px; box-sizing: border-box; }
+.scene { display: flex; justify-content: center; align-items: flex-end; height: 100vh; padding-bottom: 50px; box-sizing: border-box; z-index: 20; position: absolute; top: 0; left: 0; width: 100%; }
 .text-box {
     width: 90%; max-width: 600px; background-color: #000; border: 4px solid #fff;
     padding: 20px; color: #fff; font-family: 'Press Start 2P', monospace;
@@ -46,23 +53,20 @@ body, html {
 /* --- ТИТРЫ И ТРЯСКА --- */
 #splash-screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
-    background-color: #000; display: flex; justify-content: center; align-items: center;
+    background-color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center;
     z-index: 100; color: #fff; font-family: 'Press Start 2P', monospace;
-    text-align: center; font-size: 1.5rem; line-height: 1.5; text-shadow: 0 0 10px #fff;
+    text-align: center; font-size: 2rem; line-height: 1.5; text-shadow: 0 0 10px #fff; padding: 20px; box-sizing: border-box;
 }
 @keyframes shake {
-    0% { transform: translate(2px, 2px) rotate(0deg); }
-    20% { transform: translate(-6px, 0px) rotate(1deg); }
-    40% { transform: translate(2px, -2px) rotate(1deg); }
-    60% { transform: translate(-6px, 2px) rotate(0deg); }
-    80% { transform: translate(-2px, -2px) rotate(1deg); }
-    100% { transform: translate(2px, -4px) rotate(-1deg); }
+    0% { transform: translate(2px, 2px) rotate(0deg); } 20% { transform: translate(-6px, 0px) rotate(1deg); }
+    40% { transform: translate(2px, -2px) rotate(1deg); } 60% { transform: translate(-6px, 2px) rotate(0deg); }
+    80% { transform: translate(-2px, -2px) rotate(1deg); } 100% { transform: translate(2px, -4px) rotate(-1deg); }
 }
 @keyframes whiteFlash { 0% { background-color: #000; } 50% { background-color: #fff; } 100% { background-color: #000; } }
 .shake-effect { animation: shake 0.5s infinite; }
 .flash-effect { animation: whiteFlash 1s ease-out; }
 
-/* --- КОМНАТА --- */
+/* --- КОМНАТА И КАРТА --- */
 #map-container {
     position: relative; width: 90vw; height: 60vh; max-width: 600px; max-height: 500px;
     margin: 20px auto; border: 6px solid #222; background-color: #111;
@@ -90,7 +94,14 @@ body, html {
 }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* --- КНОПКИ --- */
+/* --- КРЫСА --- */
+#rat {
+    position: absolute; font-size: 25px; z-index: 9; transform: translate(-50%, -50%);
+    animation: pulse 1s infinite alternate; filter: drop-shadow(0 0 5px red);
+}
+@keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) scale(1.2); } }
+
+/* --- КНОПКИ УПРАВЛЕНИЯ --- */
 #controls { display: grid; grid-template-columns: 70px 70px 70px; grid-template-rows: 70px 70px 70px; gap: 8px; justify-content: center; margin-top: 15px; margin-bottom: 20px; z-index: 50; }
 .control-btn {
     background: rgba(0, 0, 0, 0.6); border: 3px solid #fff; color: #fff; font-size: 24px;
@@ -102,3 +113,10 @@ body, html {
 .left { grid-column: 1; grid-row: 2; }
 .right { grid-column: 3; grid-row: 2; }
 .down { grid-column: 2; grid-row: 3; }
+
+/* --- ГОРИЗОНТАЛЬНЫЙ РЕЖИМ (АЛЬБОМНЫЙ) --- */
+@media (orientation: landscape) {
+    #game-screen { display: flex !important; flex-direction: row !important; justify-content: center !important; align-items: center !important; gap: 40px; padding: 10px; }
+    #map-container { width: 65vh; height: 85vh; margin: 0; }
+    #controls { margin: 0; }
+}
