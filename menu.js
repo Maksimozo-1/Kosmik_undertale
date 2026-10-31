@@ -1,4 +1,4 @@
-// --- 1. КОСМОС И ЧЕРНАЯ ДЫРА ---
+// --- 1. КОСМОС И ЧЕРНАЯ ДЫРА (МЕНЮ) ---
 const canvas = document.getElementById('space-canvas');
 const ctx = canvas.getContext('2d');
 let stars = [], width, height, time = 0;
@@ -22,12 +22,6 @@ function animate() {
     ctx.beginPath(); ctx.arc(cx, cy, r * 1.02, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255, 240, 200, 0.9)'; ctx.lineWidth = 2; ctx.stroke();
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.PI / 12); ctx.scale(1, 0.3);
     ctx.beginPath(); ctx.arc(0, 0, r * 1.3, 0, Math.PI); ctx.strokeStyle = 'rgba(255, 200, 100, 0.8)'; ctx.lineWidth = 15; ctx.stroke(); ctx.restore();
-    for (let i = 0; i < 40; i++) {
-        const angle = time * 2 + (i * Math.PI * 2) / 40; const dist = r * (1.1 + Math.sin(time * 3 + i) * 0.2);
-        const px = Math.cos(angle) * dist, py = Math.sin(angle) * dist * 0.3;
-        const finalX = cx + px * Math.cos(Math.PI / 12) - py * Math.sin(Math.PI / 12); const finalY = cy + px * Math.sin(Math.PI / 12) + py * Math.cos(Math.PI / 12);
-        ctx.beginPath(); ctx.arc(finalX, finalY, Math.random() * 1.5 + 0.5, 0, Math.PI * 2); ctx.fillStyle = `rgba(255, 180, 50, ${Math.max(0, 1 - (dist / (r * 2)))})`; ctx.fill();
-    }
     stars.forEach(star => {
         star.x -= star.speed; star.alpha += star.twinkleSpeed;
         if (star.alpha > 1 || star.alpha < 0.2) star.twinkleSpeed *= -1;
@@ -96,16 +90,8 @@ let termPos = { x: 8, y: 9 };
 const playerElement = document.getElementById('player');
 
 const mapGrid = [
-    [1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1]
+    [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,1,1,1,1,1,1,1,1,1]
 ];
 
 function drawMap() {
@@ -138,14 +124,6 @@ function showMessage(text) {
     b.onclick = function() { document.getElementById('scene-awake').style.display = 'none'; document.getElementById('controls').style.display = 'flex'; };
 }
 
-function startRatEncounter() {
-    document.getElementById('controls').style.display = 'none'; document.getElementById('scene-awake').style.display = 'flex';
-    const txt = document.getElementById('dialogue-text'), b = document.getElementById('next-btn');
-    txt.textContent = "Из темноты на вас бросается зараженная крыса! Её глаза светятся красным...";
-    b.style.display = 'block'; b.textContent = "В БОЙ! ⚔️";
-    b.onclick = function() { alert("Тут будет битва! (Скоро)"); };
-}
-
 function handleActionC() {
     const scene = document.getElementById('scene-awake');
     if (scene.style.display === 'flex') { const nextBtn = document.getElementById('next-btn'); if (nextBtn && nextBtn.style.display !== 'none') { nextBtn.click(); } }
@@ -167,6 +145,4 @@ function handleMove(e) {
     } else { clearInterval(moveTimer); currentDirection = null; }
 }
 function handleEnd() { isDragging = false; joystickStick.style.transform = `translate(-50%, -50%)`; clearInterval(moveTimer); currentDirection = null; }
-joystickArea.addEventListener('touchstart', handleStart, { passive: false }); joystickArea.addEventListener('touchmove', handleMove, { passive: false });
-joystickArea.addEventListener('touchend', handleEnd); joystickArea.addEventListener('touchcancel', handleEnd);
-joystickArea.addEventListener('mousedown', handleStart); window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', handleEnd);
+joystickArea.addEventListener('touchstart', handleStart, { passive: false }); joystickArea.addEventListener('touchmove', handleMove, {
