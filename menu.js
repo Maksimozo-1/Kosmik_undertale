@@ -39,23 +39,45 @@ function animate() {
 window.addEventListener('resize', resizeCanvas); resizeCanvas(); animate();
 
 // --- 2. МУЗЫКА И МЕНЮ ---
-const music = document.getElementById('bg-music'), musicBtn = document.getElementById('music-toggle');
+const music = document.getElementById('bg-music');
+const musicBtn = document.getElementById('music-btn');
 let audioCtx, sourceNode, filterNode, isPlaying = false;
+
 function toggleMusic() {
-    if (isPlaying) { music.pause(); musicBtn.textContent = '🔇 Включить звук'; isPlaying = false; } 
-    else {
-        if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); sourceNode = audioCtx.createMediaElementSource(music); filterNode = audioCtx.createBiquadFilter(); filterNode.type = 'lowpass'; filterNode.frequency.value = 1200; sourceNode.connect(filterNode); filterNode.connect(audioCtx.destination); }
+    if (isPlaying) { 
+        music.pause(); 
+        musicBtn.textContent = '🔇'; 
+        isPlaying = false; 
+    } else {
+        if (!audioCtx) { 
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            sourceNode = audioCtx.createMediaElementSource(music); 
+            filterNode = audioCtx.createBiquadFilter(); 
+            filterNode.type = 'lowpass'; 
+            filterNode.frequency.value = 1200; 
+            sourceNode.connect(filterNode); 
+            filterNode.connect(audioCtx.destination); 
+        }
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        music.volume = 1.0; music.play().then(() => { musicBtn.textContent = '🔊 Выключить звук'; isPlaying = true; }).catch(e => alert("Ошибка звука: " + e.message));
+        music.volume = 1.0; 
+        music.play().then(() => { 
+            musicBtn.textContent = '🎤'; 
+            isPlaying = true; 
+        }).catch(e => alert("Ошибка звука: " + e.message));
     }
 }
+
 function action(command) {
     if (command === 'new_game') {
         if (music) music.pause(); 
         if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e => console.log(e));
         if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(e => console.log(e));
-        document.getElementById('main-menu').style.display = 'none'; document.getElementById('music-toggle').style.display = 'none';
-        document.getElementById('game-screen').style.display = 'flex'; canvas.style.display = 'none'; currentLine = 0;
+        document.getElementById('main-menu').style.display = 'none'; 
+        document.getElementById('music-info').style.display = 'none';
+        document.getElementById('music-btn').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'flex'; 
+        canvas.style.display = 'none'; 
+        currentLine = 0;
     } else if (command === 'continue') { alert("Сохранений нет!"); } else { alert("В разработке!"); }
 }
 
@@ -94,24 +116,15 @@ function nextDialogue() {
 
 // --- 4. КАРТА И ДВИЖЕНИЕ ---
 const mapWidth = 10, mapHeight = 10;
-let playerPos = { x: 5, y: 8 }; // Космонавт в центре низа
-let ratPos = { x: 3, y: 8 };    // Крыса слева от него (на той же линии)
+let playerPos = { x: 5, y: 8 }; 
+let ratPos = { x: 3, y: 8 }; 
 let savePos = { x: 5, y: 4 };
 let termPos = { x: 8, y: 8 };
 const playerElement = document.getElementById('player');
 
-// Карта: стены только сверху (где окно) и по бокам, низ полностью открыт
 const mapGrid = [
-    [1,1,1,1,1,1,1,1,1,1], 
-    [1,1,1,1,1,1,1,1,1,1], 
-    [1,1,1,1,1,1,1,1,1,1], 
-    [1,1,1,1,1,1,1,1,1,1], 
-    [1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,1], 
-    [1,0,0,0,0,0,0,0,0,1], 
-    [1,0,0,0,0,0,0,0,0,1], 
-    [1,0,0,0,0,0,0,0,0,1], 
-    [1,0,0,0,0,0,0,0,0,1] 
+    [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1] 
 ];
 
 function drawMap() {
@@ -170,7 +183,6 @@ joystickArea.addEventListener('touchend', handleEnd);
 
 // --- 6. БОЕВАЯ СИСТЕМА ---
 let playerHP = 20, enemyHP = 100, isPlayerTurn = true;
-let attackAnimationFrame;
 
 function startRatEncounter() {
     document.getElementById('controls').style.display = 'none';
@@ -196,11 +208,10 @@ function playerAttack() {
         attackBtn.textContent = "⚔️ АТАКА";
         
         const slash = document.getElementById('slash-effect');
-        slash.style.display = 'block';
-        slash.style.animation = 'none'; 
+        slash.classList.remove('active');
         void slash.offsetWidth; 
-        slash.style.animation = 'slash-anim 0.3s ease-out forwards';
-        setTimeout(() => { slash.style.display = 'none'; }, 500);
+        slash.classList.add('active');
+        setTimeout(() => { slash.classList.remove('active'); }, 500);
 
         let damage = Math.floor(Math.random() * 20) + 15; 
         enemyHP -= damage;
@@ -211,7 +222,7 @@ function playerAttack() {
         
         if (enemyHP <= 0) {
             setTimeout(() => {
-                document.getElementById('battle-text').textContent = "Вы победили! Крыса рассыпалась в пыль...";
+                document.getElementById('battle-text').textContent = "Вы победили!";
                 setTimeout(() => {
                     document.getElementById('battle-screen').style.display = 'none';
                     document.getElementById('map-container').style.display = 'block';
@@ -224,6 +235,10 @@ function playerAttack() {
         }
         setTimeout(enemyTurn, 1500);
     };
+}
+
+function showBattleText(text) {
+    document.getElementById('battle-text').textContent = text;
 }
 
 function enemyTurn() {
@@ -242,4 +257,4 @@ function enemyTurn() {
         isPlayerTurn = true;
         setTimeout(() => { document.getElementById('battle-text').textContent = "Ваш ход!"; }, 1000);
     }, 1000);
-    }
+}
