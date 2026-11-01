@@ -10,11 +10,16 @@
 
     <canvas id="space-canvas"></canvas>
 
+    <!-- Музыка -->
     <audio id="bg-music" loop>
         <source src="horror (online-audio-converter.com).mp3" type="audio/mpeg">
     </audio>
 
-    <button id="music-toggle" onclick="toggleMusic()">🔇 Включить звук</button>
+    <!-- Информация о музыке (слева) -->
+    <div id="music-info">🎵 Zero Project - Gothic</div>
+
+    <!-- Кнопка микрофона (справа) -->
+    <button id="music-btn" onclick="toggleMusic()">🎤</button>
 
     <!-- Главное меню -->
     <div class="menu-wrapper" id="main-menu">
@@ -62,7 +67,6 @@
 
         <!-- БОЕВОЙ ЭКРАН -->
         <div id="battle-screen" style="display: none;">
-            <!-- Эффект разреза -->
             <div id="slash-effect"></div>
 
             <div id="enemy-area">
@@ -76,7 +80,6 @@
                     <span>HP <span id="player-hp">20</span> / 20</span>
                 </div>
 
-                <!-- Обновленные кнопки боя -->
                 <div id="battle-menu">
                     <button class="battle-btn" onclick="playerAttack()">⚔️ АТАКА</button>
                     <button class="battle-btn" onclick="showBattleText('Вы осматриваетесь. Крыса выглядит зараженной.')">🔍 ДЕЙСТВИЕ</button>
