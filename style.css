@@ -8,13 +8,24 @@ body, html {
 }
 #space-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
-/* --- МЕНЮ --- */
-#music-toggle {
-    position: absolute; top: 20px; right: 20px; z-index: 100;
-    background: rgba(0, 0, 0, 0.7); border: 2px solid #b366ff;
-    color: #b366ff; padding: 10px 15px; font-family: 'Press Start 2P', monospace;
-    font-size: 0.8rem; cursor: pointer; border-radius: 5px; transition: all 0.2s;
+/* --- МУЗЫКА --- */
+#music-info {
+    position: absolute; top: 20px; left: 20px; z-index: 100;
+    color: #b366ff; font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem; text-shadow: 0 0 5px rgba(179, 102, 255, 0.5);
+    pointer-events: none;
 }
+#music-btn {
+    position: absolute; top: 20px; right: 20px; z-index: 100;
+    background: rgba(0, 0, 0, 0.6); border: 2px solid #b366ff;
+    color: #b366ff; width: 45px; height: 45px;
+    border-radius: 50%; font-size: 1.2rem;
+    cursor: pointer; display: flex; justify-content: center; align-items: center;
+    transition: all 0.2s;
+}
+#music-btn:hover, #music-btn:active { background: #b366ff; color: #000; transform: scale(0.9); }
+
+/* --- МЕНЮ --- */
 .menu-wrapper {
     position: relative; z-index: 2; display: flex; flex-direction: column;
     justify-content: space-between; align-items: center; height: 100vh;
@@ -62,7 +73,6 @@ body, html {
 #map { display: grid; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10; pointer-events: none; }
 .wall, .floor { background: transparent; border: none; box-sizing: border-box; }
 
-/* Окно с планетой */
 #ship-window {
     position: absolute; top: 5%; left: 5%; width: 50%; height: 40%;
     background: rgba(0, 0, 0, 0.9); border: 8px solid #333; border-radius: 15px; z-index: 2; 
@@ -82,7 +92,6 @@ body, html {
 .emergency-light { position: absolute; top: 0; left: 20%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255, 0, 0, 0.2) 0%, transparent 70%); z-index: 4; pointer-events: none; animation: red-alert 2s infinite; }
 @keyframes red-alert { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
 
-/* Персонажи */
 #player { position: absolute; width: 45px; height: 45px; object-fit: contain; transition: all 0.2s ease-in-out; z-index: 20; transform: translate(-50%, -50%); image-rendering: pixelated; mix-blend-mode: screen; }
 #rat { position: absolute; font-size: 35px; z-index: 19; transform: translate(-50%, -50%); animation: pulse 1s infinite alternate; filter: drop-shadow(0 0 10px red); }
 @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) scale(1.2); } }
@@ -105,8 +114,8 @@ body, html {
 
 /* --- БОЕВОЙ ЭКРАН --- */
 #battle-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000; z-index: 500; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; font-family: 'Press Start 2P', monospace; }
-#enemy-area { text-align: center; margin-top: 5vh; position: relative; z-index: 5; display: flex; flex-direction: column; align-items: center; }
-#enemy { font-size: 80px; animation: pulse 1s infinite alternate; }
+#enemy-area { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; margin-top: 5vh; position: relative; z-index: 5; }
+#enemy { font-size: 80px; animation: pulse 1s infinite alternate; text-align: center; }
 #enemy-hp-bar { width: 200px; height: 15px; background: #333; margin: 0 auto 10px; border: 2px solid #fff; }
 #enemy-hp-fill { width: 100%; height: 100%; background: #00ff00; transition: width 0.3s; }
 #battle-ui { border: 4px solid #fff; background-color: #000; padding: 10px; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 5; }
@@ -131,4 +140,8 @@ body, html {
     0% { transform: scaleX(0) rotate(-45deg); }
     50% { transform: scaleX(1) rotate(-45deg); }
     100% { transform: scaleX(1) rotate(-45deg); opacity: 0; }
-            }
+}
+
+@media (orientation: landscape) {
+    #map-container { width: 100vw; height: 100vh; margin: 0; }
+                 }
