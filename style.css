@@ -142,6 +142,60 @@ body, html {
     100% { transform: scaleX(1) rotate(-45deg); opacity: 0; }
 }
 
+/* --- АНИМАЦИИ СИМБИОТА --- */
+@keyframes transform-shake {
+    0% { transform: translate(0, 0) scale(1); }
+    20% { transform: translate(-5px, 5px) scale(1.1); filter: brightness(2); }
+    40% { transform: translate(5px, -5px) scale(1.2); filter: hue-rotate(90deg); }
+    60% { transform: translate(-5px, -5px) scale(1.3); filter: brightness(3); }
+    80% { transform: translate(5px, 5px) scale(1.4); filter: hue-rotate(180deg); }
+    100% { transform: translate(0, 0) scale(1.5); filter: drop-shadow(0 0 30px #8a2be2); }
+}
+.symbiote-form { animation: transform-shake 1s forwards !important; font-size: 100px !important; }
+
+@keyframes slice-and-reassemble {
+    0% { transform: scale(1.5) skewX(0); opacity: 1; }
+    30% { transform: scale(1.5) skewX(20deg) translateX(-20px); opacity: 0.5; filter: brightness(5); }
+    60% { transform: scale(1.5) skewX(-20deg) translateX(20px); opacity: 0.5; }
+    100% { transform: scale(1.5) skewX(0) translateX(0); opacity: 1; filter: drop-shadow(0 0 30px #8a2be2); }
+}
+.symbiote-hit { animation: slice-and-reassemble 0.8s ease-in-out; }
+
+@keyframes symbiote-attack {
+    0% { transform: scale(1.5); }
+    50% { transform: scale(3) translateY(50px); filter: brightness(0) drop-shadow(0 0 50px red); }
+    100% { transform: scale(1.5); }
+}
+.enemy-attacking { animation: symbiote-attack 1s ease-in-out; }
+
+/* --- ЭКРАН СМЕРТИ (ЧЕРНЫЙ КВАДРАТ) --- */
+#death-screen {
+    position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: #000; display: none; flex-direction: column;
+    justify-content: center; align-items: center; z-index: 1000;
+    font-family: 'Press Start 2P', monospace;
+}
+#death-animation-area { position: relative; width: 100%; height: 40vh; display: flex; justify-content: center; align-items: center; }
+#dead-hero { position: absolute; width: 50px; height: 50px; image-rendering: pixelated; mix-blend-mode: screen; animation: hero-get-killed 1.5s forwards; }
+@keyframes hero-get-killed {
+    0% { transform: scale(1); filter: none; opacity: 1; }
+    30% { transform: scale(1) translateY(-20px); filter: brightness(3) drop-shadow(0 0 20px red); }
+    60% { transform: scale(0.8) translateY(30px) rotate(45deg); filter: grayscale(100%) brightness(0.5); opacity: 1; }
+    100% { transform: scale(0.5) translateY(100px) rotate(90deg); filter: grayscale(100%) brightness(0); opacity: 0; }
+}
+#killer-symbiote { position: absolute; font-size: 120px; filter: drop-shadow(0 0 30px red); opacity: 0; animation: symbiote-kill-anim 1.5s forwards; z-index: 10; }
+@keyframes symbiote-kill-anim {
+    0% { transform: scale(0) translateX(-200px); opacity: 0; }
+    30% { transform: scale(1.5) translateX(0); opacity: 1; }
+    40% { transform: scale(1.8) rotate(-10deg); filter: brightness(2) drop-shadow(0 0 50px red); } 
+    70% { transform: scale(1.5) rotate(10deg); opacity: 1; }
+    100% { transform: scale(1.2) rotate(0deg); opacity: 1; }
+}
+#death-title { color: #ff0000; font-size: 2.5rem; text-shadow: 0 0 20px #ff0000; margin: 20px 0; opacity: 0; animation: fade-in-text 1s 1.5s forwards; }
+#death-tip { width: 90%; max-width: 600px; border-left: 4px solid #ff0000; background: #050505; padding: 15px; box-sizing: border-box; opacity: 0; animation: fade-in-text 1s 2s forwards; }
+#death-tip p { color: #ff0000; font-size: 0.8rem; line-height: 1.8; margin: 0; text-shadow: 0 0 5px rgba(255, 0, 0, 0.5); }
+@keyframes fade-in-text { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+
 @media (orientation: landscape) {
     #map-container { width: 100vw; height: 100vh; margin: 0; }
-                 }
+          }
