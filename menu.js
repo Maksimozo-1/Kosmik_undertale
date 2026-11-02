@@ -181,18 +181,38 @@ function handleEnd() { isDragging = false; joystickStick.style.transform = `tran
 joystickArea.addEventListener('touchstart', handleStart, { passive: false }); joystickArea.addEventListener('touchmove', handleMove, { passive: false });
 joystickArea.addEventListener('touchend', handleEnd);
 
-// --- 6. БОЕВАЯ СИСТЕМА ---
+// --- 6. БОЕВАЯ СИСТЕМА (С ЛОВУШКОЙ И СИМБИОТОМ) ---
 let playerHP = 20, enemyHP = 100, isPlayerTurn = true;
+let isSymbiote = false; 
 
 function startRatEncounter() {
     document.getElementById('controls').style.display = 'none';
     document.getElementById('map-container').style.display = 'none';
     document.getElementById('battle-screen').style.display = 'flex';
+    
     playerHP = 20; enemyHP = 100;
+    isSymbiote = false;
     document.getElementById('player-hp').textContent = playerHP;
+    
+    const enemyEl = document.getElementById('enemy');
+    enemyEl.className = ''; 
+    enemyEl.textContent = "🐀";
     document.getElementById('enemy-hp-fill').style.width = '100%';
-    document.getElementById('battle-text').textContent = "Из темноты на вас бросается зараженная крыса!";
+    document.getElementById('enemy-hp-fill').style.background = '#00ff00';
+    
+    document.getElementById('battle-text').textContent = "Вы подходите к зараженной крысе...";
     isPlayerTurn = true;
+
+    setTimeout(() => {
+        document.getElementById('battle-text').textContent = "Это была ловушка! Крыса начинает мутировать...";
+        setTimeout(() => {
+            enemyEl.textContent = "👾"; 
+            enemyEl.classList.add('symbiote-form');
+            document.getElementById('enemy-hp-fill').style.background = '#8a2be2'; 
+            document.getElementById('battle-text').textContent = "Перед вами настоящий Симбиот. Он кажется неуязвимым!";
+            isSymbiote = true;
+        }, 2000);
+    }, 1500);
 }
 
 function playerAttack() {
@@ -213,27 +233,42 @@ function playerAttack() {
         slash.classList.add('active');
         setTimeout(() => { slash.classList.remove('active'); }, 500);
 
-        let damage = Math.floor(Math.random() * 20) + 15; 
-        enemyHP -= damage;
-        if (enemyHP < 0) enemyHP = 0;
-        
-        document.getElementById('enemy-hp-fill').style.width = `${enemyHP}%`;
-        document.getElementById('battle-text').textContent = `Вы рассекли крысу! Урон: ${damage}.`;
-        
-        if (enemyHP <= 0) {
+        if (isSymbiote) {
+            const enemyEl = document.getElementById('enemy');
+            enemyEl.classList.remove('symbiote-hit');
+            void enemyEl.offsetWidth; 
+            enemyEl.classList.add('symbiote-hit');
+            
+            let damage = Math.floor(Math.random() * 20) + 15; 
+            let tempHP = enemyHP - damage;
+            document.getElementById('enemy-hp-fill').style.width = `${tempHP}%`;
+            document.getElementById('battle-text').textContent = `Вы разрубили его пополам! Урон: ${damage}.`;
+            
             setTimeout(() => {
-                document.getElementById('battle-text').textContent = "Вы победили!";
+                document.getElementById('enemy-hp-fill').style.width = '100%'; 
+                document.getElementById('battle-text').textContent = "Но щупальца соединили его тело обратно. Урон не прошел!";
+                setTimeout(enemyTurn, 1500);
+            }, 1200); 
+
+        } else {
+            let damage = Math.floor(Math.random() * 20) + 15; 
+            enemyHP -= damage;
+            if (enemyHP < 0) enemyHP = 0;
+            document.getElementById('enemy-hp-fill').style.width = `${enemyHP}%`;
+            document.getElementById('battle-text').textContent = `Вы ударили крысу! Урон: ${damage}.`;
+            
+            if (enemyHP <= 0) {
                 setTimeout(() => {
                     document.getElementById('battle-screen').style.display = 'none';
                     document.getElementById('map-container').style.display = 'block';
                     document.getElementById('controls').style.display = 'flex';
                     ratPos = { x: -1, y: -1 }; 
-                    alert("Вы победили! (Продолжение следует...)");
-                }, 3000);
-            }, 1000);
-            return;
+                    alert("Вы победили!");
+                }, 2000);
+                return;
+            }
+            setTimeout(enemyTurn, 1500);
         }
-        setTimeout(enemyTurn, 1500);
     };
 }
 
@@ -242,19 +277,50 @@ function showBattleText(text) {
 }
 
 function enemyTurn() {
-    document.getElementById('battle-text').textContent = "Крыса кусает вас!";
-    setTimeout(() => {
-        const damage = Math.floor(Math.random() * 5) + 2;
-        playerHP -= damage; if (playerHP < 0) playerHP = 0;
-        document.getElementById('player-hp').textContent = playerHP;
-        document.getElementById('battle-text').textContent = `Крыса нанесла вам ${damage} урона!`;
+    if (isSymbiote) {
+        document.getElementById('battle-text').textContent = "Симбиот пронзает вас щупальцами!";
         
-        if (playerHP <= 0) {
-            document.getElementById('battle-text').textContent = "Вы погибли...";
-            setTimeout(() => location.reload(), 3000);
-            return;
-        }
-        isPlayerTurn = true;
-        setTimeout(() => { document.getElementById('battle-text').textContent = "Ваш ход!"; }, 1000);
-    }, 1000);
-}
+        const enemyEl = document.getElementById('enemy');
+        enemyEl.classList.remove('enemy-attacking');
+        void enemyEl.offsetWidth;
+        enemyEl.classList.add('enemy-attacking');
+
+        setTimeout(() => {
+            playerHP = 0;
+            document.getElementById('player-hp').textContent = playerHP;
+            document.getElementById('battle-text').textContent = "Это было слишком сильно...";
+            
+            setTimeout(() => {
+                // Прячем боевой интерфейс и показываем экран смерти
+                document.getElementById('battle-ui').style.display = 'none';
+                document.getElementById('enemy-area').style.display = 'none';
+                document.getElementById('slash-effect').style.display = 'none';
+                document.getElementById('death-screen').style.display = 'flex';
+                
+                // Перезагружаем игру через 7 секунд
+                setTimeout(() => {
+                    location.reload();
+                }, 7000); 
+            }, 1000);
+        }, 500); 
+
+    } else {
+        document.getElementById('battle-text').textContent = "Крыса кусает вас!";
+        setTimeout(() => {
+            const damage = Math.floor(Math.random() * 5) + 2;
+            playerHP -= damage; if (playerHP < 0) playerHP = 0;
+            document.getElementById('player-hp').textContent = playerHP;
+            document.getElementById('battle-text').textContent = `Крыса нанесла вам ${damage} урона!`;
+            
+            if (playerHP <= 0) {
+                document.getElementById('battle-ui').style.display = 'none';
+                document.getElementById('enemy-area').style.display = 'none';
+                document.getElementById('death-screen').style.display = 'flex';
+                setTimeout(() => { location.reload(); }, 7000);
+                return;
+            }
+            isPlayerTurn = true;
+            setTimeout(() => { document.getElementById('battle-text').textContent = "Ваш ход!"; }, 1000);
+        }, 1000);
+    }
+    }
