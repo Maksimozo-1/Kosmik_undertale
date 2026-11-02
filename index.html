@@ -10,7 +10,6 @@
 
     <canvas id="space-canvas"></canvas>
 
-    <!-- Музыка -->
     <audio id="bg-music" loop>
         <source src="horror (online-audio-converter.com).mp3" type="audio/mpeg">
     </audio>
@@ -89,6 +88,20 @@
 
                 <div id="battle-text">Что будете делать?</div>
             </div>
+
+            <!-- ЭКРАН СМЕРТИ -->
+            <div id="death-screen" style="display: none;">
+                <div id="death-animation-area">
+                    <img id="dead-hero" src="pixelart-9643229_1280.png" alt="ГГ">
+                    <div id="killer-symbiote">👾</div>
+                </div>
+                <h1 id="death-title">ВЫ ПОГИБЛИ</h1>
+                
+                <div id="death-tip">
+                    <p>СОВЕТ: Некоторых врагов невозможно победить в лоб. Возможно, стоит поискать другой путь...</p>
+                </div>
+            </div>
+
         </div>
 
         <!-- Управление -->
