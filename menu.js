@@ -59,11 +59,13 @@ function toggleMusic() {
             filterNode.connect(audioCtx.destination); 
         }
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        music.volume = 1.0; 
-        music.play().then(() => { 
-            musicBtn.textContent = '🎤'; 
-            isPlaying = true; 
-        }).catch(e => alert("Ошибка звука: " + e.message));
+        if (music.paused) {
+            music.volume = 1.0; 
+            let playPromise = music.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => { musicBtn.textContent = '🎤'; isPlaying = true; }).catch(e => console.log(e));
+            }
+        }
     }
 }
 
@@ -196,7 +198,7 @@ function startRatEncounter() {
     
     const enemyEl = document.getElementById('enemy');
     enemyEl.className = ''; 
-    enemyEl.textContent = "🐀";
+    enemyEl.src = "1793700891507.png"; // Показываем картинку симбиота сразу (временно)
     document.getElementById('enemy-hp-fill').style.width = '100%';
     document.getElementById('enemy-hp-fill').style.background = '#00ff00';
     
@@ -206,7 +208,7 @@ function startRatEncounter() {
     setTimeout(() => {
         document.getElementById('battle-text').textContent = "Это была ловушка! Крыса начинает мутировать...";
         setTimeout(() => {
-            enemyEl.textContent = "👾"; 
+            enemyEl.src = "1793700891507.png"; // Базовая стойка (4 картинка)
             enemyEl.classList.add('symbiote-form');
             document.getElementById('enemy-hp-fill').style.background = '#8a2be2'; 
             document.getElementById('battle-text').textContent = "Перед вами настоящий Симбиот. Он кажется неуязвимым!";
@@ -235,6 +237,9 @@ function playerAttack() {
 
         if (isSymbiote) {
             const enemyEl = document.getElementById('enemy');
+            
+            // 1. Разрез (5 картинка)
+            enemyEl.src = '1793700895636.png'; 
             enemyEl.classList.remove('symbiote-hit');
             void enemyEl.offsetWidth; 
             enemyEl.classList.add('symbiote-hit');
@@ -244,12 +249,32 @@ function playerAttack() {
             document.getElementById('enemy-hp-fill').style.width = `${tempHP}%`;
             document.getElementById('battle-text').textContent = `Вы разрубили его пополам! Урон: ${damage}.`;
             
+            // 2. Разделение (3 картинка)
             setTimeout(() => {
-                document.getElementById('enemy-hp-fill').style.width = '100%'; 
-                document.getElementById('battle-text').textContent = "Но щупальца соединили его тело обратно. Урон не прошел!";
-                setTimeout(enemyTurn, 1500);
+                enemyEl.src = '1793700860617.png'; 
+                document.getElementById('battle-text').textContent = "Тело симбиота распалось на две части!";
+                
+                // 3. Сборка (2 картинка)
+                setTimeout(() => {
+                    enemyEl.src = '1793700855961.png'; 
+                    document.getElementById('battle-text').textContent = "Щупальца начали стягивать части обратно...";
+                    
+                    // 4. Почти собрался (1 картинка)
+                    setTimeout(() => {
+                        enemyEl.src = '1793700845547.png'; 
+                        document.getElementById('battle-text').textContent = "Он почти восстановился!";
+                        
+                        // 5. Возврат в стойку (4 картинка)
+                        setTimeout(() => {
+                            enemyEl.src = '1793700891507.png'; 
+                            document.getElementById('enemy-hp-fill').style.width = '100%'; 
+                            document.getElementById('battle-text').textContent = "Урон не прошел! Симбиот полностью восстановился.";
+                            
+                            setTimeout(enemyTurn, 1500);
+                        }, 1000); 
+                    }, 800); 
+                }, 800); 
             }, 1200); 
-
         } else {
             let damage = Math.floor(Math.random() * 20) + 15; 
             enemyHP -= damage;
@@ -291,16 +316,11 @@ function enemyTurn() {
             document.getElementById('battle-text').textContent = "Это было слишком сильно...";
             
             setTimeout(() => {
-                // Прячем боевой интерфейс и показываем экран смерти
                 document.getElementById('battle-ui').style.display = 'none';
                 document.getElementById('enemy-area').style.display = 'none';
                 document.getElementById('slash-effect').style.display = 'none';
                 document.getElementById('death-screen').style.display = 'flex';
-                
-                // Перезагружаем игру через 7 секунд
-                setTimeout(() => {
-                    location.reload();
-                }, 7000); 
+                setTimeout(() => { location.reload(); }, 7000); 
             }, 1000);
         }, 500); 
 
@@ -323,4 +343,4 @@ function enemyTurn() {
             setTimeout(() => { document.getElementById('battle-text').textContent = "Ваш ход!"; }, 1000);
         }, 1000);
     }
-    }
+        }
