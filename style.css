@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-/* --- ОБЩЕЕ --- */
 body, html {
     margin: 0; padding: 0; width: 100%; height: 100%;
     overflow: hidden; background-color: #000;
@@ -8,7 +7,6 @@ body, html {
 }
 #space-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
-/* --- МУЗЫКА --- */
 #music-info {
     position: absolute; top: 20px; left: 20px; z-index: 100;
     color: #b366ff; font-family: 'Press Start 2P', monospace;
@@ -25,7 +23,6 @@ body, html {
 }
 #music-btn:hover, #music-btn:active { background: #b366ff; color: #000; transform: scale(0.9); }
 
-/* --- МЕНЮ --- */
 .menu-wrapper {
     position: relative; z-index: 2; display: flex; flex-direction: column;
     justify-content: space-between; align-items: center; height: 100vh;
@@ -45,7 +42,6 @@ body, html {
 }
 .menu-btn::before { content: '❤'; color: #ff0000; position: absolute; left: 10px; transition: color 0.2s; font-size: 1.2rem; }
 
-/* --- ДИАЛОГИ И ТИТРЫ --- */
 #game-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background-color: #000; }
 .scene { display: flex; justify-content: center; align-items: flex-end; height: 100vh; padding-bottom: 50px; box-sizing: border-box; z-index: 200; position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; }
 .text-box {
@@ -64,7 +60,6 @@ body, html {
 @keyframes whiteFlash { 0% { background-color: #000; } 50% { background-color: #fff; } 100% { background-color: #000; } }
 .flash-effect { animation: whiteFlash 1s ease-out; }
 
-/* --- КОМНАТА --- */
 #map-container {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background-color: #050505; overflow: hidden; z-index: 5;
@@ -99,7 +94,6 @@ body, html {
 @keyframes star-pulse { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) scale(1.3); } }
 #terminal { position: absolute; font-size: 35px; z-index: 19; transform: translate(-50%, -50%); filter: grayscale(100%) drop-shadow(0 0 10px cyan); }
 
-/* --- УПРАВЛЕНИЕ --- */
 #controls { position: absolute; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 20px 40px; box-sizing: border-box; z-index: 100; pointer-events: none; }
 #joystick-area { pointer-events: auto; width: 140px; height: 140px; position: relative; margin-left: 20px; margin-bottom: 20px; }
 #joystick-base { width: 100%; height: 100%; background: rgba(30, 30, 30, 0.5); border: 4px solid #444; border-radius: 50%; position: relative; }
@@ -112,10 +106,9 @@ body, html {
 #btn-x { top: 20px; left: 60px; width: 55px; height: 55px; }
 #btn-c { top: 85px; right: 10px; width: 60px; height: 60px; }
 
-/* --- БОЕВОЙ ЭКРАН --- */
 #battle-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000; z-index: 500; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; font-family: 'Press Start 2P', monospace; }
 #enemy-area { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; margin-top: 5vh; position: relative; z-index: 5; }
-#enemy { font-size: 80px; animation: pulse 1s infinite alternate; text-align: center; }
+#enemy { width: 150px; height: 150px; object-fit: contain; image-rendering: pixelated; animation: pulse 1s infinite alternate; text-align: center; }
 #enemy-hp-bar { width: 200px; height: 15px; background: #333; margin: 0 auto 10px; border: 2px solid #fff; }
 #enemy-hp-fill { width: 100%; height: 100%; background: #00ff00; transition: width 0.3s; }
 #battle-ui { border: 4px solid #fff; background-color: #000; padding: 10px; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 5; }
@@ -126,7 +119,6 @@ body, html {
 .battle-btn:hover, .battle-btn:active { background: #ffff00; color: #000; }
 #battle-text { color: #fff; text-align: center; font-size: 1rem; min-height: 30px; margin-top: 10px; }
 
-/* --- ЭФФЕКТ РАЗРЕЗА --- */
 #slash-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.1); z-index: 10; pointer-events: none; opacity: 0; }
 #slash-effect.active { animation: slash-anim 0.4s ease-out forwards; }
 @keyframes slash-anim { 
@@ -142,7 +134,6 @@ body, html {
     100% { transform: scaleX(1) rotate(-45deg); opacity: 0; }
 }
 
-/* --- АНИМАЦИИ СИМБИОТА --- */
 @keyframes transform-shake {
     0% { transform: translate(0, 0) scale(1); }
     20% { transform: translate(-5px, 5px) scale(1.1); filter: brightness(2); }
@@ -151,24 +142,23 @@ body, html {
     80% { transform: translate(5px, 5px) scale(1.4); filter: hue-rotate(180deg); }
     100% { transform: translate(0, 0) scale(1.5); filter: drop-shadow(0 0 30px #8a2be2); }
 }
-.symbiote-form { animation: transform-shake 1s forwards !important; font-size: 100px !important; }
+.symbiote-form { animation: transform-shake 1s forwards !important; width: 180px !important; height: 180px !important; }
 
 @keyframes slice-and-reassemble {
-    0% { transform: scale(1.5) skewX(0); opacity: 1; }
-    30% { transform: scale(1.5) skewX(20deg) translateX(-20px); opacity: 0.5; filter: brightness(5); }
-    60% { transform: scale(1.5) skewX(-20deg) translateX(20px); opacity: 0.5; }
-    100% { transform: scale(1.5) skewX(0) translateX(0); opacity: 1; filter: drop-shadow(0 0 30px #8a2be2); }
+    0% { transform: scale(1.2) skewX(0); opacity: 1; }
+    20% { transform: scale(1.2) skewX(25deg) translateX(-30px); opacity: 0.8; filter: brightness(5); }
+    50% { transform: scale(1.2) skewX(-25deg) translateX(30px); opacity: 0.8; }
+    100% { transform: scale(1.2) skewX(0) translateX(0); opacity: 1; filter: drop-shadow(0 0 30px #8a2be2); }
 }
-.symbiote-hit { animation: slice-and-reassemble 0.8s ease-in-out; }
+.symbiote-hit { animation: slice-and-reassemble 1.5s ease-in-out; }
 
 @keyframes symbiote-attack {
-    0% { transform: scale(1.5); }
+    0% { transform: scale(1.2); }
     50% { transform: scale(3) translateY(50px); filter: brightness(0) drop-shadow(0 0 50px red); }
-    100% { transform: scale(1.5); }
+    100% { transform: scale(1.2); }
 }
 .enemy-attacking { animation: symbiote-attack 1s ease-in-out; }
 
-/* --- ЭКРАН СМЕРТИ (ЧЕРНЫЙ КВАДРАТ) --- */
 #death-screen {
     position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
     background-color: #000; display: none; flex-direction: column;
@@ -198,4 +188,4 @@ body, html {
 
 @media (orientation: landscape) {
     #map-container { width: 100vw; height: 100vh; margin: 0; }
-          }
+                }
