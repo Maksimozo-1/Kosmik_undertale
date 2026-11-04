@@ -108,7 +108,7 @@ body, html {
 
 #battle-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000; z-index: 500; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; font-family: 'Press Start 2P', monospace; }
 #enemy-area { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; margin-top: 5vh; position: relative; z-index: 5; }
-#enemy { width: 150px; height: 150px; object-fit: contain; image-rendering: pixelated; animation: pulse 1s infinite alternate; text-align: center; }
+#enemy { width: 180px; height: 180px; object-fit: contain; image-rendering: pixelated; animation: pulse 1s infinite alternate; text-align: center; mix-blend-mode: screen; filter: drop-shadow(0 0 15px #8a2be2); }
 #enemy-hp-bar { width: 200px; height: 15px; background: #333; margin: 0 auto 10px; border: 2px solid #fff; }
 #enemy-hp-fill { width: 100%; height: 100%; background: #00ff00; transition: width 0.3s; }
 #battle-ui { border: 4px solid #fff; background-color: #000; padding: 10px; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 5; }
@@ -142,7 +142,7 @@ body, html {
     80% { transform: translate(5px, 5px) scale(1.4); filter: hue-rotate(180deg); }
     100% { transform: translate(0, 0) scale(1.5); filter: drop-shadow(0 0 30px #8a2be2); }
 }
-.symbiote-form { animation: transform-shake 1s forwards !important; width: 180px !important; height: 180px !important; }
+.symbiote-form { animation: transform-shake 1s forwards !important; width: 220px !important; height: 220px !important; }
 
 @keyframes slice-and-reassemble {
     0% { transform: scale(1.2) skewX(0); opacity: 1; }
@@ -173,7 +173,7 @@ body, html {
     60% { transform: scale(0.8) translateY(30px) rotate(45deg); filter: grayscale(100%) brightness(0.5); opacity: 1; }
     100% { transform: scale(0.5) translateY(100px) rotate(90deg); filter: grayscale(100%) brightness(0); opacity: 0; }
 }
-#killer-symbiote { position: absolute; font-size: 120px; filter: drop-shadow(0 0 30px red); opacity: 0; animation: symbiote-kill-anim 1.5s forwards; z-index: 10; }
+#killer-symbiote { position: absolute; width: 150px; height: 150px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 0 30px red); opacity: 0; animation: symbiote-kill-anim 1.5s forwards; z-index: 10; mix-blend-mode: screen; }
 @keyframes symbiote-kill-anim {
     0% { transform: scale(0) translateX(-200px); opacity: 0; }
     30% { transform: scale(1.5) translateX(0); opacity: 1; }
@@ -188,4 +188,4 @@ body, html {
 
 @media (orientation: landscape) {
     #map-container { width: 100vw; height: 100vh; margin: 0; }
-                }
+}
