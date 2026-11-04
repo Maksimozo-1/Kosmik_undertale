@@ -198,7 +198,7 @@ function startRatEncounter() {
     
     const enemyEl = document.getElementById('enemy');
     enemyEl.className = ''; 
-    enemyEl.src = "1793700891507.png"; // Показываем картинку симбиота сразу (временно)
+    enemyEl.src = "1000098981-removebg-preview.png"; // Базовая стойка
     document.getElementById('enemy-hp-fill').style.width = '100%';
     document.getElementById('enemy-hp-fill').style.background = '#00ff00';
     
@@ -208,7 +208,7 @@ function startRatEncounter() {
     setTimeout(() => {
         document.getElementById('battle-text').textContent = "Это была ловушка! Крыса начинает мутировать...";
         setTimeout(() => {
-            enemyEl.src = "1793700891507.png"; // Базовая стойка (4 картинка)
+            enemyEl.src = "1000098981-removebg-preview.png"; // Базовая стойка
             enemyEl.classList.add('symbiote-form');
             document.getElementById('enemy-hp-fill').style.background = '#8a2be2'; 
             document.getElementById('battle-text').textContent = "Перед вами настоящий Симбиот. Он кажется неуязвимым!";
@@ -238,8 +238,8 @@ function playerAttack() {
         if (isSymbiote) {
             const enemyEl = document.getElementById('enemy');
             
-            // 1. Разрез (5 картинка)
-            enemyEl.src = '1793700895636.png'; 
+            // 1. Разрез
+            enemyEl.src = '1000098982-removebg-preview.png'; 
             enemyEl.classList.remove('symbiote-hit');
             void enemyEl.offsetWidth; 
             enemyEl.classList.add('symbiote-hit');
@@ -249,24 +249,24 @@ function playerAttack() {
             document.getElementById('enemy-hp-fill').style.width = `${tempHP}%`;
             document.getElementById('battle-text').textContent = `Вы разрубили его пополам! Урон: ${damage}.`;
             
-            // 2. Разделение (3 картинка)
+            // 2. После разреза (развалился)
             setTimeout(() => {
-                enemyEl.src = '1793700860617.png'; 
+                enemyEl.src = '1000098980-removebg-preview.png'; 
                 document.getElementById('battle-text').textContent = "Тело симбиота распалось на две части!";
                 
-                // 3. Сборка (2 картинка)
+                // 3. 1 этап сборки
                 setTimeout(() => {
-                    enemyEl.src = '1793700855961.png'; 
+                    enemyEl.src = '1000098979-removebg-preview.png'; 
                     document.getElementById('battle-text').textContent = "Щупальца начали стягивать части обратно...";
                     
-                    // 4. Почти собрался (1 картинка)
+                    // 4. 2 этап сборки (почти восстановился)
                     setTimeout(() => {
-                        enemyEl.src = '1793700845547.png'; 
+                        enemyEl.src = '1000098978-removebg-preview.png'; 
                         document.getElementById('battle-text').textContent = "Он почти восстановился!";
                         
-                        // 5. Возврат в стойку (4 картинка)
+                        // 5. Возврат в стойку
                         setTimeout(() => {
-                            enemyEl.src = '1793700891507.png'; 
+                            enemyEl.src = '1000098981-removebg-preview.png'; 
                             document.getElementById('enemy-hp-fill').style.width = '100%'; 
                             document.getElementById('battle-text').textContent = "Урон не прошел! Симбиот полностью восстановился.";
                             
@@ -343,4 +343,4 @@ function enemyTurn() {
             setTimeout(() => { document.getElementById('battle-text').textContent = "Ваш ход!"; }, 1000);
         }, 1000);
     }
-        }
+                }
