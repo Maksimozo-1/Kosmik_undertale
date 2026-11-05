@@ -9,6 +9,7 @@ function createStars() {
     for (let i = 0; i < starCount; i++) { stars.push({ x: Math.random() * width, y: Math.random() * height, radius: Math.random() * 1.5 + 0.5, speed: Math.random() * 0.5 + 0.1, alpha: Math.random() * 0.8 + 0.2, twinkleSpeed: Math.random() * 0.02 + 0.01 }); }
 }
 function animate() {
+    if (canvas.style.display === 'none') { requestAnimationFrame(animate); return; } // во время игры космос не виден — не тратим батарею
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, width, height);
     time += 0.005; const cx = width / 2, cy = height / 2, r = Math.min(width, height) * 0.18;
     let glow = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 3);
@@ -41,147 +42,117 @@ window.addEventListener('resize', resizeCanvas); resizeCanvas(); animate();
 // --- 2. МУЗЫКА И МЕНЮ ---
 const music = document.getElementById('bg-music');
 const musicBtn = document.getElementById('music-btn');
-let audioCtx, sourceNode, filterNode, isPlaying = false;
+const MUSIC_VOL = 1;
+music.preload = 'auto'; // чтобы после первого касания музыка стартовала сразу, а не догружалась
+
+// Выключил звук — помним это и после перезагрузки
+let musicOn = true;
+try { musicOn = localStorage.getItem('kosmik_music') !== 'off'; } catch (e) {}
+let musicPlaying = false, inGame = false, fadeTimer = null;
+
+// Плавная громкость вместо резкого обрыва (на iPhone громкость из кода не меняется — там просто пауза)
+function fadeMusic(to, ms, done) {
+    clearInterval(fadeTimer);
+    const from = music.volume, t0 = performance.now();
+    fadeTimer = setInterval(() => {
+        const k = Math.min(1, (performance.now() - t0) / ms);
+        music.volume = from + (to - from) * k;
+        if (k === 1) { clearInterval(fadeTimer); if (done) done(); }
+    }, 30);
+}
+
+function updateMusicBtn() { musicBtn.textContent = (musicOn && musicPlaying) ? '🎤' : '🔇'; }
+
+function startMusic() {
+    if (!musicOn || inGame || document.hidden) return;
+    if (!music.paused) { fadeMusic(MUSIC_VOL, 500); return; }
+    music.volume = 0;
+    music.play().then(() => {
+        // пока браузер думал, игрок мог уже начать игру или выключить звук
+        if (!musicOn || inGame) { music.pause(); return; }
+        fadeMusic(MUSIC_VOL, 2500);
+    }).catch(() => {}); // браузер не дал играть без касания — запустим на первом касании
+}
 
 function toggleMusic() {
-    if (isPlaying) { 
-        music.pause(); 
-        musicBtn.textContent = '🔇'; 
-        isPlaying = false; 
+    if (musicOn && musicPlaying) {
+        musicOn = false;
+        fadeMusic(0, 400, () => music.pause());
     } else {
-        if (!audioCtx) { 
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
-            sourceNode = audioCtx.createMediaElementSource(music); 
-            filterNode = audioCtx.createBiquadFilter(); 
-            filterNode.type = 'lowpass'; 
-            filterNode.frequency.value = 1200; 
-            sourceNode.connect(filterNode); 
-            filterNode.connect(audioCtx.destination); 
-        }
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        if (music.paused) {
-            music.volume = 1.0; 
-            let playPromise = music.play();
-            if (playPromise !== undefined) {
-                playPromise.then(() => { musicBtn.textContent = '🎤'; isPlaying = true; }).catch(e => console.log(e));
-            }
-        }
+        musicOn = true;
+        startMusic();
     }
+    try { localStorage.setItem('kosmik_music', musicOn ? 'on' : 'off'); } catch (e) {}
+    updateMusicBtn();
+}
+
+music.addEventListener('playing', () => { musicPlaying = true; updateMusicBtn(); });
+music.addEventListener('pause', () => { musicPlaying = false; updateMusicBtn(); });
+
+// Браузеры запрещают звук, пока игрок не коснулся страницы, — поэтому стартуем на первом касании, клике или клавише
+function unlockMusic(e) {
+    if (!music.paused || (e.target.closest && e.target.closest('#music-btn'))) return;
+    startMusic();
+}
+['touchend', 'mousedown', 'keydown', 'click'].forEach(ev => document.addEventListener(ev, unlockMusic));
+// Свернул вкладку — музыка не играет в фоне
+document.addEventListener('visibilitychange', () => { if (document.hidden) music.pause(); else startMusic(); });
+updateMusicBtn();
+startMusic(); // некоторые браузеры разрешают звук сразу
+
+// Общее для «Начать новую» и «Продолжить»: убираем меню, глушим музыку, разворачиваем на весь экран
+function enterGame() {
+    inGame = true;
+    fadeMusic(0, 1200, () => music.pause());
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e => console.log(e));
+    if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(e => console.log(e));
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('music-info').style.display = 'none';
+    document.getElementById('music-btn').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'flex';
+    canvas.style.display = 'none';
+    shipUnlockAudio(); // звуки корабля можно включить только по нажатию — оно как раз сейчас
 }
 
 function action(command) {
     if (command === 'new_game') {
-        if (music) music.pause(); 
-        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e => console.log(e));
-        if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(e => console.log(e));
-        document.getElementById('main-menu').style.display = 'none'; 
-        document.getElementById('music-info').style.display = 'none';
-        document.getElementById('music-btn').style.display = 'none';
-        document.getElementById('game-screen').style.display = 'flex'; 
-        canvas.style.display = 'none'; 
-        currentLine = 0;
-    } else if (command === 'continue') { alert("Сохранений нет!"); } else { alert("В разработке!"); }
+        enterGame();
+        say(dialogueLines, endIntro);
+    } else if (command === 'continue') {
+        const save = loadShipSave();
+        if (!save) { alert("Сохранений нет!"); return; }
+        enterGame();
+        document.getElementById('scene-awake').style.display = 'none';
+        startShip(save);
+    } else { alert("В разработке!"); }
 }
 
 // --- 3. ДИАЛОГИ ---
+// Текст печатается по буквам (функция say в ship.js). Z, Enter или касание — дальше, X — допечатать сразу
 const dialogueLines = [
     "Вы медленно открываете глаза. Всё тело ломит от боли. Вокруг темно, слышен только скрип металла и тихое шипение воздуха...",
     "Вы пытаетесь вспомнить, что произошло. Вспышка. Черная дыра. Крик команды. А потом — тишина.",
     "Вы с трудом поднимаетесь на ноги. Кажется, вы на какой-то неизвестной планете. В иллюминаторе виден странный, фиолетовый свет.",
     "Внезапно, вы слышите странный звук за спиной. Вы не одни..."
 ];
-let currentLine = 0;
-const textElement = document.getElementById('dialogue-text'), btn = document.getElementById('next-btn');
 
-function nextDialogue() {
-    currentLine++;
-    if (currentLine < dialogueLines.length) { textElement.textContent = dialogueLines[currentLine]; } 
-    else {
-        textElement.textContent = "Продолжение следует..."; btn.style.display = 'none';
-        const gameScreen = document.getElementById('game-screen');
+// После вступления: вспышка, титры — и карта корабля
+function endIntro() {
+    const gameScreen = document.getElementById('game-screen');
+    setTimeout(() => {
+        gameScreen.classList.add('flash-effect');
         setTimeout(() => {
-            gameScreen.classList.add('flash-effect');
+            gameScreen.classList.remove('flash-effect');
+            document.getElementById('splash-screen').style.display = 'flex';
             setTimeout(() => {
-                gameScreen.classList.remove('flash-effect'); 
-                document.getElementById('scene-awake').style.display = 'none'; 
-                document.getElementById('splash-screen').style.display = 'flex';
-                setTimeout(() => {
-                    document.getElementById('splash-screen').style.display = 'none'; 
-                    document.getElementById('map-container').style.display = 'block'; 
-                    document.getElementById('controls').style.display = 'flex'; 
-                    drawMap();
-                }, 2500);
-            }, 1500);
-        }, 1000);
-    }
+                document.getElementById('splash-screen').style.display = 'none';
+                startShip(null);
+            }, 2500);
+        }, 1500);
+    }, 600);
 }
 
-// --- 4. КАРТА И ДВИЖЕНИЕ ---
-const mapWidth = 10, mapHeight = 10;
-let playerPos = { x: 5, y: 8 }; 
-let ratPos = { x: 3, y: 8 }; 
-let savePos = { x: 5, y: 4 };
-let termPos = { x: 8, y: 8 };
-const playerElement = document.getElementById('player');
-
-const mapGrid = [
-    [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0,1] 
-];
-
-function drawMap() {
-    const mapDiv = document.getElementById('map'); mapDiv.innerHTML = ''; 
-    mapDiv.style.gridTemplateColumns = `repeat(${mapWidth}, 1fr)`; mapDiv.style.gridTemplateRows = `repeat(${mapHeight}, 1fr)`;
-    for (let y = 0; y < mapHeight; y++) { for (let x = 0; x < mapWidth; x++) { const cell = document.createElement('div'); cell.className = mapGrid[y][x] === 1 ? 'wall' : 'floor'; mapDiv.appendChild(cell); } }
-    updatePlayerPosition(); updateElementPosition('rat', ratPos); updateElementPosition('save-point', savePos); updateElementPosition('terminal', termPos);
-}
-function updatePlayerPosition() { const cellW = 100 / mapWidth, cellH = 100 / mapHeight; playerElement.style.left = `${(playerPos.x * cellW) + (cellW / 2)}%`; playerElement.style.top = `${(playerPos.y * cellH) + (cellH / 2)}%`; }
-function updateElementPosition(id, pos) { const el = document.getElementById(id); const cellW = 100 / mapWidth, cellH = 100 / mapHeight; el.style.left = `${(pos.x * cellW) + (cellW / 2)}%`; el.style.top = `${(pos.y * cellH) + (cellH / 2)}%`; }
-
-function move(direction) {
-    if (document.getElementById('scene-awake').style.display === 'flex') return;
-    let newX = playerPos.x, newY = playerPos.y;
-    if (direction === 'up') newY--; if (direction === 'down') newY++; if (direction === 'left') newX--; if (direction === 'right') newX++;
-    if (newX >= 0 && newX < mapWidth && newY >= 0 && newY < mapHeight) {
-        if (mapGrid[newY][newX] === 0) {
-            if (newX === ratPos.x && newY === ratPos.y) { startRatEncounter(); } 
-            else if (newX === savePos.x && newY === savePos.y) { playerPos.x = newX; playerPos.y = newY; updatePlayerPosition(); showMessage("Вы чувствуете, как ваша решимость крепнет. (Вы сохранились)"); } 
-            else if (newX === termPos.x && newY === termPos.y) { playerPos.x = newX; playerPos.y = newY; updatePlayerPosition(); showMessage("Терминал искрит. На экране мигает надпись: 'ОШИБКА КУРСА. МЫ НЕ ДОЛЖНЫ БЫЛИ ЛЕТЕТЬ СЮДА...'"); } 
-            else { playerPos.x = newX; playerPos.y = newY; updatePlayerPosition(); }
-        }
-    }
-}
-
-function showMessage(text) {
-    document.getElementById('controls').style.display = 'none'; document.getElementById('scene-awake').style.display = 'flex';
-    const txt = document.getElementById('dialogue-text'), b = document.getElementById('next-btn');
-    txt.textContent = text; b.style.display = 'block'; b.textContent = "Продолжить ▶";
-    b.onclick = function() { document.getElementById('scene-awake').style.display = 'none'; document.getElementById('controls').style.display = 'flex'; };
-}
-
-function handleActionC() {
-    const scene = document.getElementById('scene-awake');
-    if (scene.style.display === 'flex') { const nextBtn = document.getElementById('next-btn'); if (nextBtn && nextBtn.style.display !== 'none') { nextBtn.click(); } }
-}
-
-// --- 5. ДЖОЙСТИК ---
-const joystickArea = document.getElementById('joystick-area'), joystickStick = document.getElementById('joystick-stick');
-let joyCenter = { x: 0, y: 0 }, isDragging = false, moveTimer = null, currentDirection = null;
-function handleStart(e) { e.preventDefault(); const rect = joystickArea.getBoundingClientRect(); joyCenter.x = rect.left + rect.width / 2; joyCenter.y = rect.top + rect.height / 2; isDragging = true; handleMove(e); }
-function handleMove(e) {
-    if (!isDragging) return; e.preventDefault();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX, clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    let dx = clientX - joyCenter.x, dy = clientY - joyCenter.y; const distance = Math.sqrt(dx * dx + dy * dy), maxDist = 40; 
-    if (distance > maxDist) { dx = (dx / distance) * maxDist; dy = (dy / distance) * maxDist; }
-    joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-    if (distance > 15) {
-        let dir = ''; if (Math.abs(dx) > Math.abs(dy)) { dir = dx > 0 ? 'right' : 'left'; } else { dir = dy > 0 ? 'down' : 'up'; }
-        if (dir !== currentDirection) { currentDirection = dir; clearInterval(moveTimer); move(dir); moveTimer = setInterval(() => move(dir), 200); }
-    } else { clearInterval(moveTimer); currentDirection = null; }
-}
-function handleEnd() { isDragging = false; joystickStick.style.transform = `translate(-50%, -50%)`; clearInterval(moveTimer); currentDirection = null; }
-joystickArea.addEventListener('touchstart', handleStart, { passive: false }); joystickArea.addEventListener('touchmove', handleMove, { passive: false });
-joystickArea.addEventListener('touchend', handleEnd);
+// Карта, движение, джойстик и сохранения теперь в ship.js
 
 // --- 6. БОЕВАЯ СИСТЕМА (С ЛОВУШКОЙ И СИМБИОТОМ) ---
 let playerHP = 20, enemyHP = 100, isPlayerTurn = true;
@@ -285,10 +256,8 @@ function playerAttack() {
             if (enemyHP <= 0) {
                 setTimeout(() => {
                     document.getElementById('battle-screen').style.display = 'none';
-                    document.getElementById('map-container').style.display = 'block';
-                    document.getElementById('controls').style.display = 'flex';
-                    ratPos = { x: -1, y: -1 }; 
-                    alert("Вы победили!");
+                    resumeShip({ ratGone: true }); // обратно на карту, крысы там больше нет
+                    say(['* Вы победили!']);
                 }, 2000);
                 return;
             }

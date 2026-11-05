@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KOSMIK UNDERTALE</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 
@@ -13,9 +13,15 @@
     <audio id="bg-music" loop>
         <source src="menu_music.mp3" type="audio/mpeg">
     </audio>
+    <!-- Гул корабля на карте -->
+    <audio id="ship-ambient" loop preload="auto">
+        <source src="ship_ambient.mp3" type="audio/mpeg">
+    </audio>
 
     <!-- Информация о музыке (слева) -->
-    <div id="music-info">🎵 Zero Project - Gothic</div>
+    <!-- Music by zero-project | www.zero-project.gr — «Gothic», лицензия CC BY 4.0
+         (https://creativecommons.org/licenses/by/4.0/). Громкость уменьшена, файл перекодирован. -->
+    <div id="music-info">🎵 zero-project — Gothic</div>
 
     <!-- Кнопка микрофона (справа) -->
     <button id="music-btn" onclick="toggleMusic()">🎤</button>
@@ -36,7 +42,7 @@
         <div id="scene-awake" class="scene">
             <div class="text-box">
                 <p id="dialogue-text">Вы медленно открываете глаза...</p>
-                <button id="next-btn" onclick="nextDialogue()">Далее ▶</button>
+                <button id="next-btn">Далее ▶</button>
             </div>
         </div>
 
@@ -45,23 +51,9 @@
             <h1>Maksimozo<br>представляет</h1>
         </div>
 
-        <!-- КОМНАТА -->
+        <!-- КАРТА КОРАБЛЯ: всё рисует ship.js -->
         <div id="map-container" style="display: none;">
-            <div id="ship-window">
-                <div id="space-view">
-                    <div class="planet"></div>
-                    <div class="wreckage wreckage-1"></div>
-                    <div class="wreckage wreckage-2"></div>
-                    <div class="broken-glass"></div>
-                </div>
-            </div>
-            
-            <div class="emergency-light"></div>
-            <div id="map"></div>
-            <img id="player" src="pixelart-9643229_1280.png" alt="Космонавт">
-            <div id="rat">🐀</div>
-            <div id="save-point">⭐</div>
-            <div id="terminal">💻</div>
+            <canvas id="ship-canvas"></canvas>
         </div>
 
         <!-- БОЕВОЙ ЭКРАН -->
@@ -111,13 +103,15 @@
                 </div>
             </div>
             <div id="action-buttons">
-                <button class="action-btn" id="btn-z" onclick="handleActionC()">Z</button>
+                <button class="action-btn" id="btn-z">Z</button>
                 <button class="action-btn" id="btn-x">X</button>
                 <button class="action-btn" id="btn-c">C</button>
             </div>
         </div>
     </div>
 
-    <script src="menu.js"></script>
+    <!-- ?v=2 — чтобы телефон не взял старые файлы из памяти. Поменял файлы — увеличь число -->
+    <script src="menu.js?v=2"></script>
+    <script src="ship.js?v=2"></script>
 </body>
 </html>
