@@ -60,24 +60,28 @@ const CRATE = ['* Ящики с припасами. Почти все вскры
 const NAV = ['* Пульт навигации.', '* «КООРДИНАТЫ: НЕ ОПРЕДЕЛЕНЫ».'];
 const COM = ['* Пульт связи.', '* «СИГНАЛ: НЕТ». Кнопка вызова не нажимается.'];
 
-// Предметы: t — тип, x/y — левая верхняя клетка, say — текст при осмотре (Z)
+// Предметы: t — тип, x/y — левая верхняя клетка, say — текст при осмотре (Z).
+// item — вещь, которую тут можно взять (список вещей — ITEMS в battle.js), take — текст, когда берёшь
 const PROPS = [
     // медотсек
     { t: 'cabinet', x: 2, y: 11, say: ['* Аптечка. Пусто.', '* Кто-то выгреб всё до последнего бинта.'] },
     { t: 'pod', v: 'broken', x: 3, y: 11, say: ['* Криокапсула №1. Стекло разбито...', '* ...изнутри.'] },
-    { t: 'pod', v: 'frost', x: 5, y: 11, say: ['* Криокапсула №2. Стекло покрыто инеем.', '* Вы протираете его рукавом. Внутри пусто.'] },
+    { t: 'pod', v: 'frost', x: 5, y: 11, say: ['* Криокапсула №2. Стекло покрыто инеем.', '* Вы протираете его рукавом. Внутри пусто.'],
+      item: 'cryo', take: ['* Криокапсула №2. Стекло покрыто инеем.', '* Внутри пусто. Только баллон с хладагентом в держателе.', '* Вы взяли КРИОБАЛЛОН.'] },
     { t: 'pod', v: 'open', x: 10, y: 11, say: ['* Ваша криокапсула. Внутри ещё держится холод.', '* На панели мигает: «АВАРИЙНОЕ ПРОБУЖДЕНИЕ».'] },
     { t: 'table', x: 3, y: 15, say: ['* Операционный стол.', '* Ремни разорваны.'] },
     { t: 'pad', x: 8, y: 16, say: ['* Планшет медика. Последняя запись:', '* «Крыса из грузового отсека укусила механика. Рана светится. Это ненормально.»'] },
     // коридор
     { t: 'save', x: 15, y: 13 },
-    { t: 'helmet', x: 33, y: 14, say: ['* Чей-то шлем. Стекло треснуло.', '* На затылке маркером: «МЕХАНИК».'] },
+    { t: 'helmet', x: 33, y: 14, say: ['* Чей-то шлем. Стекло треснуло.', '* На затылке маркером: «МЕХАНИК».'],
+      item: 'borsch', take: ['* Чей-то шлем. На затылке маркером: «МЕХАНИК».', '* Внутри спрятан тюбик. Механик знал толк в заначках.', '* Вы взяли ТЮБИК БОРЩА.'] },
     // мостик
     { t: 'console', v: 'nav', x: 16, y: 4, say: NAV }, { t: 'console', v: 'nav', x: 17, y: 4, say: NAV },
     { t: 'console', v: 'nav', x: 18, y: 4, say: NAV },
     { t: 'console', v: 'com', x: 29, y: 4, say: COM }, { t: 'console', v: 'com', x: 30, y: 4, say: COM },
     { t: 'console', v: 'com', x: 31, y: 4, say: COM },
-    { t: 'chair', x: 23.5, y: 5, say: ['* Кресло капитана. Пустое.', '* Ремни безопасности расстёгнуты.'] },
+    { t: 'chair', x: 23.5, y: 5, say: ['* Кресло капитана. Пустое.', '* Ремни безопасности расстёгнуты.'],
+      item: 'bar', take: ['* Кресло капитана. Пустое.', '* В подлокотнике — чья-то заначка.', '* Вы взяли КОСМО-БАТОНЧИК.'] },
     { t: 'holo', x: 23, y: 7, say: ['* Голографическая карта.', '* Мигает точка «ВЫ ЗДЕСЬ». Вокруг — ни одной знакомой звезды.'] },
     { t: 'terminal', x: 32, y: 6, say: ['* Терминал искрит.', '* На экране мигает надпись: «ОШИБКА КУРСА. МЫ НЕ ДОЛЖНЫ БЫЛИ ЛЕТЕТЬ СЮДА...»'] },
     { t: 'log', x: 15, y: 7, say: ['* Бортжурнал. Последняя запись капитана:', '* «Нас затягивает в аномалию. Двигатели не справляются.»', '* «Если кто-то это читает — не открывайте груз №7».'] },
@@ -105,7 +109,7 @@ const SPOT_SAY = { '31,12': ['* Из разбитого щитка сыплют�
 SPOT_SAY['7,10'] = SPOT_SAY['8,10'] = ['* По стеклу ползёт трещина. На полу — осколки.', '* Снаружи фиолетовый песок. Из него торчат куски нашей обшивки.'];
 const CRACKED = [8, 22, 39];   // в этих клетках (по x) стекло иллюминатора треснуло при падении
 for (let x = 21; x <= 26; x++) for (const y of [2, 3]) SPOT_SAY[x + ',' + y] = ['* Над горизонтом висит чёрная дыра.', '* Та самая.'];
-const SAVE_SAY = ['* (Звезда мерцает в темноте.)', '* Вы чувствуете, как ваша решимость крепнет.', '* (Игра сохранена.)'];
+const SAVE_SAY = ['* (Звезда мерцает в темноте.)', '* Вы чувствуете, как ваша решимость крепнет.', '* (HP восстановлено. Игра сохранена.)'];
 
 // Свет: x/y — центр пятна (клетки), r — радиус (пикс), c — цвет, g — сила цветного свечения,
 // fx — поведение: alarm (мигалка), flicker (барахлит), dying (почти умерла), spark (искры), breath, holo
@@ -649,7 +653,7 @@ function drawBrokenPanel(c, x, y) {
 }
 
 const P = { x: 0, y: 0, dir: 'down', frame: 0, animT: 0, stepT: 0, moving: false, face: Math.PI / 2 };
-const rat = { x: 0, y: 0, alive: true, chase: false, tx: 0, ty: 0, wait: 0, stuck: 0, frame: 0, animT: 0, right: false };
+const rat = { x: 0, y: 0, alive: true, chase: false, tx: 0, ty: 0, wait: 0, stuck: 0, frame: 0, animT: 0, right: false, calm: 0 };
 const EMIT = { panel: { x: 31.5 * T, y: 12 * T + 14, next: 1, flash: 0 }, term: { x: 32 * T + 24, y: 6 * T - 12, next: 2, flash: 0 } };
 const parts = [];
 let state = 'off', amb = 0.86, curRoom = null, enc = null, fadeA = 1, clock = 0, events = [];
@@ -731,8 +735,9 @@ function nearDoor(d) {
 
 function updateRat(dt) {
     if (!rat.alive) return;
+    if (rat.calm > 0) rat.calm -= dt;   // сбежал из боя — крыса даёт пару секунд уйти
     const dx = P.x - rat.x, dy = P.y - 2 - rat.y, dist = Math.hypot(dx, dy);
-    const hunt = state === 'play' && curRoom && curRoom.name === 'ГРУЗОВОЙ ОТСЕК' && dist < 170;
+    const hunt = rat.calm <= 0 && state === 'play' && curRoom && curRoom.name === 'ГРУЗОВОЙ ОТСЕК' && dist < 170;
     let tx, ty, sp;
     if (hunt) {
         if (!rat.chase) { rat.chase = true; SFX.squeak(); }
@@ -756,6 +761,17 @@ function updateRat(dt) {
         rat.animT += dt; rat.frame = Math.floor(rat.animT / (rat.chase ? 0.08 : 0.14)) % 2;
     }
     if (hunt && dist < 18) startEncounter();
+}
+// Куда отбегает крыса, когда ты сбежал из боя: точка в грузовом отсеке подальше от героя
+function ratAway() {
+    let best = null, bd = -1;
+    for (let i = 0; i < 40; i++) {
+        const x = (14.6 + Math.random() * 18.8) * T, y = (18.7 + Math.random() * 7.9) * T;
+        if (ratHit(x, y)) continue;
+        const d = Math.hypot(x - P.x, y - P.y);
+        if (d > bd) { bd = d; best = { x, y }; }
+    }
+    return best || { x: RAT_START.x * T, y: RAT_START.y * T };
 }
 
 function updateFx(dt) {
@@ -800,7 +816,12 @@ function interact() {
     const inBox = (b, x, y) => x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h;
     const hitProp = props.find(p => (p.say || p.t === 'save') && (inBox(p.ibox, qx, qy) || (!p.box && inBox(p.ibox, P.x, P.y - 4))));
     if (hitProp) {
-        if (hitProp.t === 'save') { SFX.save(); saveGame(); return say(SAVE_SAY); }
+        if (hitProp.t === 'save') { SFX.save(); HERO.hp = HERO.maxHp; saveGame(); return say(SAVE_SAY); }
+        if (hitProp.item && !HERO.found[hitProp.item]) {   // нашёл вещь: кладём в карманы, на последней фразе — «дзынь»
+            HERO.found[hitProp.item] = true; HERO.items.push(hitProp.item);
+            const t = hitProp.take;
+            return say(t.slice(0, -1), () => { SFX.item(); say(t[t.length - 1]); });
+        }
         return say(hitProp.say);
     }
     const tx = Math.floor(qx / T), ty = Math.floor(qy / T), ch = tileAt(tx, ty);
@@ -1091,6 +1112,18 @@ function drawSprites(t) {
         else drawProp(t, it);
     }
 }
+// Вещь, которую ещё не взяли, иногда поблёскивает — чтобы игрок её заметил
+function drawGlints(t) {
+    for (const p of props) {
+        if (!p.item || HERO.found[p.item] || !p.img) continue;
+        const ph = (t * 0.8 + p.i * 0.37) % 2.4;
+        if (ph > 0.5) continue;
+        const k = Math.sin(ph / 0.5 * Math.PI), s = Math.round(1 + k * 3);
+        const x = Math.round(p.dx + p.img.width * 0.72), y = Math.round(p.dy + Math.min(10, p.img.height * 0.3));
+        R(ec, '#ffffff', x - s, y, s * 2 + 1, 1); R(ec, '#ffffff', x, y - s, 1, s * 2 + 1);
+        halos.push([x + 0.5, y + 0.5, 12, '#ffffff', 0.35 * k]);
+    }
+}
 function drawProp(t, p) {
     sc.drawImage(p.img, p.dx, p.dy);
     cut(p.img, 0, 0, p.img.width, p.img.height, p.dx, p.dy);
@@ -1162,7 +1195,7 @@ function render() {
     // 3) предметы, герой и крыса — их затеняем той же темнотой; светящееся — нет
     for (const c of [sc, ec]) { c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, VW, VH); c.setTransform(1, 0, 0, 1, -ox, -oy); }
     emitBackground(t, ox, oy);
-    drawSprites(t);
+    drawSprites(t); drawGlints(t);
     sc.setTransform(1, 0, 0, 1, 0, 0); sc.globalCompositeOperation = 'source-atop'; sc.drawImage(lc.canvas, 0, 0); sc.globalCompositeOperation = 'source-over';
     cx.drawImage(sc.canvas, 0, 0);
     // 4) цветной свет, светящиеся детали, ореолы, частицы
@@ -1243,8 +1276,10 @@ function confirmKey() { if (talk) advance(); else if (state === 'play') interact
 function cancelKey() { if (talk && talk.typing) finishLine(); }
 function menuKey() {
     if (talk || state !== 'play') return;
-    const hp = typeof playerHP !== 'undefined' ? playerHP : 20;
-    say([`* КОСМОНАВТ    HP ${hp}/20\n* Отсек: ${curRoom ? curRoom.name : '???'}`, '* Z — осмотреть.\n* X (держать) — бежать.']);
+    const names = HERO.items.map(id => typeof ITEMS !== 'undefined' && ITEMS[id] ? ITEMS[id].name : id);
+    say([`* ${HERO.name}   LV ${HERO.lv}   HP ${HERO.hp}/${HERO.maxHp}\n* Отсек: ${curRoom ? curRoom.name : '???'}`,
+        names.length ? '* В карманах: ' + names.join(', ') + '.' : '* Карманы пусты.',
+        '* Z — осмотреть.\n* X (держать) — бежать.']);
 }
 // e.code — это физическая клавиша, поэтому Z работает и на русской раскладке
 document.addEventListener('keydown', e => {
@@ -1376,6 +1411,7 @@ const SFX = {
     door: () => { noise(0.42, 0.06, 'bandpass', 420, 0, 0.9, 2400); tone('sine', 95, 55, 0.18, 0.06, 0.32); },
     locked: () => { tone('square', 150, 150, 0.09, 0.04); tone('square', 118, 118, 0.13, 0.04, 0.12); },
     save: () => [523, 659, 784, 1047].forEach((f, i) => tone('triangle', f, f, 0.22, 0.07, i * 0.07)),
+    item: () => [1047, 1319, 1568].forEach((f, i) => tone('square', f, f, 0.09, 0.03, i * 0.07)),
     alert: () => { tone('square', 880, 1320, 0.07, 0.05); tone('square', 1320, 1320, 0.09, 0.045, 0.07); },
     heart: () => tone('square', 450, 450, 0.07, 0.045),
     spark: v => { noise(0.08 + Math.random() * 0.1, 0.06 * v, 'highpass', 3000, 0, 0.7); noise(0.04, 0.05 * v, 'highpass', 5200, 0.06 + Math.random() * 0.06, 0.7); },
@@ -1385,7 +1421,10 @@ const SFX = {
 // ---------- сохранение ----------
 const SAVE_KEY = 'kosmik_save';
 function saveGame() {
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ x: Math.round(P.x), y: Math.round(P.y), dir: P.dir, ratGone: !rat.alive })); } catch (e) {}
+    try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify({ x: Math.round(P.x), y: Math.round(P.y), dir: P.dir, ratGone: !rat.alive,
+            hp: HERO.hp, maxHp: HERO.maxHp, lv: HERO.lv, exp: HERO.exp, items: HERO.items, found: HERO.found, flags: HERO.flags }));
+    } catch (e) {}
     markContinue();
 }
 function loadShipSave() {
@@ -1415,10 +1454,16 @@ function stopLoop() { cancelAnimationFrame(raf); raf = 0; }
 function startShip(save) {
     if (!built) { buildArt(); buildWorld(); setupCanvas(); built = true; }
     const s = save || null;
+    HERO.maxHp = s && s.maxHp > 0 ? s.maxHp : 20;
+    HERO.hp = s && s.hp > 0 ? Math.min(s.hp, HERO.maxHp) : HERO.maxHp;
+    HERO.lv = (s && s.lv) || 1; HERO.exp = (s && s.exp) || 0;
+    HERO.items = s && Array.isArray(s.items) ? s.items.slice() : [];
+    HERO.found = s && s.found ? { ...s.found } : {};
+    HERO.flags = s && s.flags ? { ...s.flags } : {};
     P.x = s ? s.x : START.x * T; P.y = s ? s.y : START.y * T;
     P.dir = s && DIRV[s.dir] ? s.dir : START.dir;
     P.face = Math.atan2(DIRV[P.dir][1], DIRV[P.dir][0]); P.frame = 0; P.moving = false;
-    Object.assign(rat, { alive: !(s && s.ratGone), x: RAT_START.x * T, y: RAT_START.y * T, tx: RAT_START.x * T, ty: RAT_START.y * T, chase: false, wait: 1, stuck: 0 });
+    Object.assign(rat, { alive: !(s && s.ratGone), x: RAT_START.x * T, y: RAT_START.y * T, tx: RAT_START.x * T, ty: RAT_START.y * T, chase: false, wait: 1, stuck: 0, calm: 0 });
     for (const d of DOORS) { d.want = !d.locked && nearDoor(d) ? 1 : 0; d.open = d.want; }
     curRoom = roomAt(P.x, P.y - 4); amb = curRoom ? curRoom.dark : 0.86;
     parts.length = 0; enc = null; clock = 0; fadeA = 1;
@@ -1436,10 +1481,14 @@ function pauseShip() {
     joyReset(); keys.clear(); xHeld = false;
     ambientTo(0, 600);
 }
-// После боя: resumeShip({ ratGone: true }) — крыса исчезает с карты
+// После боя: resumeShip({ ratGone: true }) — крыса исчезает с карты, resumeShip({ fled: true }) — сбежал, крыса отбегает
 function resumeShip(opts) {
     if (!built) return;
     if (opts && opts.ratGone) rat.alive = false;
+    if (opts && opts.fled) {
+        const p = ratAway();
+        Object.assign(rat, { x: p.x, y: p.y, tx: p.x, ty: p.y, chase: false, wait: 1, stuck: 0, calm: 4 });
+    }
     ui.map.style.display = 'block'; ui.controls.style.display = 'flex';
     state = talk ? 'say' : 'play'; fadeA = 1;
     if (curRoom) showRoom(curRoom.name);
@@ -1457,6 +1506,8 @@ window.pauseShip = pauseShip;
 window.resumeShip = resumeShip;
 window.shipUnlockAudio = shipUnlockAudio;
 window.loadShipSave = loadShipSave;
+window.shipArt = ART;   // бой (battle.js) берёт отсюда крысу
+window.shipSound = { tone, noise, ctx: () => actx };   // ...и звуки
 // для проверки: открой игру с ?debug — в консоли появится window.ship
 if (/[?&]debug/.test(location.search)) window.ship = { P, rat, DOORS, props, get state() { return state; }, get room() { return curRoom && curRoom.name; }, interact, startEncounter };
 markContinue();

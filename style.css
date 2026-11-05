@@ -25,7 +25,7 @@ body, html {
 
 .menu-wrapper {
     position: relative; z-index: 2; display: flex; flex-direction: column;
-    justify-content: space-between; align-items: center; height: 100vh;
+    justify-content: space-between; align-items: center; height: 100%;
     padding: 5vh 20px; box-sizing: border-box;
 }
 .game-title {
@@ -43,7 +43,7 @@ body, html {
 .menu-btn::before { content: '❤'; color: #ff0000; position: absolute; left: 10px; transition: color 0.2s; font-size: 1.2rem; }
 
 #game-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background-color: #000; }
-.scene { display: flex; justify-content: center; align-items: flex-end; height: 100vh; padding-bottom: 50px; box-sizing: border-box; z-index: 200; position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; }
+.scene { display: flex; justify-content: center; align-items: flex-end; height: 100%; padding-bottom: 50px; box-sizing: border-box; z-index: 200; position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; }
 .text-box {
     width: 90%; max-width: 600px; background-color: #000; border: 4px solid #fff;
     padding: 20px; color: #fff; font-family: 'Press Start 2P', monospace;
@@ -52,7 +52,7 @@ body, html {
 #next-btn { position: absolute; bottom: 10px; right: 10px; background: transparent; border: none; color: #ffff00; font-family: 'Press Start 2P', monospace; font-size: 1rem; cursor: pointer; }
 
 #splash-screen {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background-color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center;
     z-index: 300; color: #fff; font-family: 'Press Start 2P', monospace;
     text-align: center; font-size: 2rem; line-height: 1.5; text-shadow: 0 0 10px #fff;
@@ -62,7 +62,7 @@ body, html {
 
 /* ---------- КАРТА КОРАБЛЯ (рисует ship.js) ---------- */
 #map-container {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0;
     background-color: #000; overflow: hidden; z-index: 5;
 }
 /* края экрана чуть темнее — так в коридорах теснее и страшнее */
@@ -84,8 +84,6 @@ body, html {
     text-shadow: 2px 2px 0 #000; opacity: 0; transition: opacity 1s;
 }
 #ship-hint.show { opacity: 1; }
-/* @keyframes pulse нужен врагу в бою */
-@keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) scale(1.2); } }
 
 #controls { position: absolute; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 20px 40px; box-sizing: border-box; z-index: 100; pointer-events: none; }
 #joystick-area { pointer-events: auto; width: 140px; height: 140px; position: relative; margin-left: 20px; margin-bottom: 20px; }
@@ -99,61 +97,13 @@ body, html {
 #btn-x { top: 20px; left: 60px; width: 55px; height: 55px; }
 #btn-c { top: 85px; right: 10px; width: 60px; height: 60px; }
 
-#battle-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000; z-index: 500; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; font-family: 'Press Start 2P', monospace; }
-#enemy-area { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; margin-top: 5vh; position: relative; z-index: 5; }
-#enemy { width: 180px; height: 180px; object-fit: contain; image-rendering: pixelated; animation: pulse 1s infinite alternate; text-align: center; mix-blend-mode: screen; filter: drop-shadow(0 0 15px #8a2be2); }
-#enemy-hp-bar { width: 200px; height: 15px; background: #333; margin: 0 auto 10px; border: 2px solid #fff; }
-#enemy-hp-fill { width: 100%; height: 100%; background: #00ff00; transition: width 0.3s; }
-#battle-ui { border: 4px solid #fff; background-color: #000; padding: 10px; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 5; }
-#player-stats { display: flex; justify-content: space-between; font-size: 1rem; color: #fff; }
-#player-hp { color: #ffff00; }
-#battle-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.battle-btn { background: transparent; border: 2px solid #fff; color: #fff; font-family: 'Press Start 2P', monospace; font-size: 1rem; padding: 15px; cursor: pointer; transition: all 0.2s; }
-.battle-btn:hover, .battle-btn:active { background: #ffff00; color: #000; }
-#battle-text { color: #fff; text-align: center; font-size: 1rem; min-height: 30px; margin-top: 10px; }
-
-#slash-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.1); z-index: 10; pointer-events: none; opacity: 0; }
-#slash-effect.active { animation: slash-anim 0.4s ease-out forwards; }
-@keyframes slash-anim { 
-    0% { opacity: 1; background: rgba(255, 0, 0, 0.4); }
-    50% { opacity: 1; background: rgba(255, 255, 255, 0.8); }
-    100% { opacity: 0; background: rgba(255, 0, 0, 0); }
-}
-#slash-effect::after { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 8px; background: #ff0000; box-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000; transform: scaleX(0); }
-#slash-effect.active::after { animation: slash-line 0.4s ease-out forwards; }
-@keyframes slash-line {
-    0% { transform: scaleX(0) rotate(-45deg); }
-    50% { transform: scaleX(1) rotate(-45deg); }
-    100% { transform: scaleX(1) rotate(-45deg); opacity: 0; }
-}
-
-@keyframes transform-shake {
-    0% { transform: translate(0, 0) scale(1); }
-    20% { transform: translate(-5px, 5px) scale(1.1); filter: brightness(2); }
-    40% { transform: translate(5px, -5px) scale(1.2); filter: hue-rotate(90deg); }
-    60% { transform: translate(-5px, -5px) scale(1.3); filter: brightness(3); }
-    80% { transform: translate(5px, 5px) scale(1.4); filter: hue-rotate(180deg); }
-    100% { transform: translate(0, 0) scale(1.5); filter: drop-shadow(0 0 30px #8a2be2); }
-}
-.symbiote-form { animation: transform-shake 1s forwards !important; width: 220px !important; height: 220px !important; }
-
-@keyframes slice-and-reassemble {
-    0% { transform: scale(1.2) skewX(0); opacity: 1; }
-    20% { transform: scale(1.2) skewX(25deg) translateX(-30px); opacity: 0.8; filter: brightness(5); }
-    50% { transform: scale(1.2) skewX(-25deg) translateX(30px); opacity: 0.8; }
-    100% { transform: scale(1.2) skewX(0) translateX(0); opacity: 1; filter: drop-shadow(0 0 30px #8a2be2); }
-}
-.symbiote-hit { animation: slice-and-reassemble 1.5s ease-in-out; }
-
-@keyframes symbiote-attack {
-    0% { transform: scale(1.2); }
-    50% { transform: scale(3) translateY(50px); filter: brightness(0) drop-shadow(0 0 50px red); }
-    100% { transform: scale(1.2); }
-}
-.enemy-attacking { animation: symbiote-attack 1s ease-in-out; }
+/* ---------- БОЙ (рисует battle.js) ----------
+   top/bottom: 0 вместо 100vh: на телефоне 100vh выше видимой части экрана, и низ уезжал под панель браузера */
+#battle-screen { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background-color: #000; z-index: 500; overflow: hidden; }
+#battle-canvas { display: block; width: 100%; height: 100%; touch-action: none; -webkit-tap-highlight-color: transparent; }
 
 #death-screen {
-    position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+    position: absolute; top: 0; right: 0; bottom: 0; left: 0; cursor: pointer;
     background-color: #000; display: none; flex-direction: column;
     justify-content: center; align-items: center; z-index: 1000;
     font-family: 'Press Start 2P', monospace;
@@ -174,14 +124,12 @@ body, html {
     70% { transform: scale(1.5) rotate(10deg); opacity: 1; }
     100% { transform: scale(1.2) rotate(0deg); opacity: 1; }
 }
-#death-title { color: #ff0000; font-size: 2.5rem; text-shadow: 0 0 20px #ff0000; margin: 20px 0; opacity: 0; animation: fade-in-text 1s 1.5s forwards; }
+#death-title { color: #ff0000; font-size: clamp(1.3rem, 8vw, 2.5rem); text-align: center; text-shadow: 0 0 20px #ff0000; margin: 20px 0; opacity: 0; animation: fade-in-text 1s 1.5s forwards; }
 #death-tip { width: 90%; max-width: 600px; border-left: 4px solid #ff0000; background: #050505; padding: 15px; box-sizing: border-box; opacity: 0; animation: fade-in-text 1s 2s forwards; }
 #death-tip p { color: #ff0000; font-size: 0.8rem; line-height: 1.8; margin: 0; text-shadow: 0 0 5px rgba(255, 0, 0, 0.5); }
 @keyframes fade-in-text { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+#death-continue { color: #fff; font-size: 0.7rem; margin: 22px 0 0; opacity: 0; animation: fade-in-text 0.6s 3.2s forwards, blink-next 1.2s steps(1) 4s infinite; }
 
-@media (orientation: landscape) {
-    #map-container { width: 100vw; height: 100vh; margin: 0; }
-}
 
 /* ---------- диалоги, управление, меню ---------- */
 #dialogue-text { white-space: pre-line; margin: 0 0 1.4em; min-height: 4.5em; }
@@ -203,4 +151,9 @@ body, html {
     #dialogue-text { min-height: 4.5em; margin-bottom: 0.6em; }
     #next-btn { font-size: 0.6rem; bottom: 6px; }
     #room-label { font-size: 0.6rem; top: 10px; }
+    #death-animation-area { height: 34vh; }
+    #death-title { font-size: 1.6rem; margin: 10px 0; }
+    #death-tip { padding: 10px 12px; }
+    #death-tip p { font-size: 0.6rem; line-height: 1.7; }
+    #death-continue { font-size: 0.6rem; margin-top: 14px; }
 }

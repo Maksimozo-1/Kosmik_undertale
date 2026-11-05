@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KOSMIK UNDERTALE</title>
-    <link rel="stylesheet" href="style.css?v=2">
+    <!-- значок вкладки: пиксельное сердце -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 8' shape-rendering='crispEdges'%3E%3Cpath fill='%23f00' d='M1 0h2v1H1zM6 0h2v1H6zM0 1h4v1H0zM5 1h4v1H5zM0 2h9v2H0zM1 4h7v1H1zM2 5h5v1H2zM3 6h3v1H3zM4 7h1v1H4z'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -56,30 +58,9 @@
             <canvas id="ship-canvas"></canvas>
         </div>
 
-        <!-- БОЕВОЙ ЭКРАН -->
+        <!-- БОЙ: всё рисует battle.js -->
         <div id="battle-screen" style="display: none;">
-            <div id="slash-effect"></div>
-
-            <div id="enemy-area">
-                <div id="enemy-hp-bar"><div id="enemy-hp-fill"></div></div>
-                <img id="enemy" src="1000098981-removebg-preview.png" alt="Симбиот">
-            </div>
-
-            <div id="battle-ui">
-                <div id="player-stats">
-                    <span>Космонавт</span>
-                    <span>HP <span id="player-hp">20</span> / 20</span>
-                </div>
-
-                <div id="battle-menu">
-                    <button class="battle-btn" onclick="playerAttack()">⚔️ АТАКА</button>
-                    <button class="battle-btn" onclick="showBattleText('Вы осматриваетесь. Крыса выглядит зараженной.')">🔍 ДЕЙСТВИЕ</button>
-                    <button class="battle-btn" onclick="showBattleText('У вас нет предметов.')">🎒 ПРЕДМЕТ</button>
-                    <button class="battle-btn" onclick="showBattleText('Крыса не хочет мириться.')">🕊️ ПОЩАДА</button>
-                </div>
-
-                <div id="battle-text">Что будете делать?</div>
-            </div>
+            <canvas id="battle-canvas"></canvas>
 
             <!-- ЭКРАН СМЕРТИ -->
             <div id="death-screen" style="display: none;">
@@ -88,10 +69,11 @@
                     <img id="killer-symbiote" src="1000098981-removebg-preview.png" alt="Симбиот">
                 </div>
                 <h1 id="death-title">ВЫ ПОГИБЛИ</h1>
-                
+
                 <div id="death-tip">
                     <p>СОВЕТ: Некоторых врагов невозможно победить в лоб. Возможно, стоит поискать другой путь...</p>
                 </div>
+                <p id="death-continue">Нажми, чтобы продолжить</p>
             </div>
         </div>
 
@@ -110,8 +92,9 @@
         </div>
     </div>
 
-    <!-- ?v=2 — чтобы телефон не взял старые файлы из памяти. Поменял файлы — увеличь число -->
-    <script src="menu.js?v=2"></script>
-    <script src="ship.js?v=2"></script>
+    <!-- ?v=3 — чтобы телефон не взял старые файлы из памяти. Поменял файлы — увеличь число -->
+    <script src="menu.js?v=3"></script>
+    <script src="ship.js?v=3"></script>
+    <script src="battle.js?v=3"></script>
 </body>
 </html>
