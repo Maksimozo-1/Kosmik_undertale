@@ -17,6 +17,9 @@ const ITEMS = {
     bar:    { name: 'Космо-батончик', heal: 8,  use: '* Вы съели космо-батончик.\n* Хрустит, как картон.' },
     borsch: { name: 'Тюбик борща',    heal: 15, use: '* Вы выдавили в рот тюбик борща.\n* Вкус как дома!' },
     // сюжетная вещь: против симбиота у неё особое действие (см. useItem ниже)
+    // против симбиота: громкий звон и огонь (см. scare ниже). Вилка с тарелкой не тратится, факел — да
+    fork:   { name: 'Вилка и тарелка', use: '* Вы стучите вилкой по тарелке.\n* ДЗЫНЬ! Громко.' },
+    flare:  { name: 'Сигнальный факел', use: '* Вы зажигаете факел.\n* Красный огонь шипит и трещит.' },
     cryo:   { name: 'Криобаллон', use: '* Вы крутите вентиль. Шипит холод.\n* Ничего не происходит.' },
 };
 
@@ -56,7 +59,7 @@ const SYMBIOTE = {
     // в каждом варианте — страницы текста
     acts: {
         'Проверить': [
-            ['* СИМБИОТ — АТК 8  ЗАЩ ∞\n* Тот самый образец №7 из груза.', '* «Хранить при −200°».\n* А здесь ему явно слишком тепло...'],
+            ['* СИМБИОТ — АТК 8  ЗАЩ ∞\n* Тот самый образец №7 из груза.', '* «Хранить при −200°».\n* А здесь ему явно слишком тепло...', '* Ещё в накладной приписка от руки:\n* «Боится громких звуков и огня».'],
         ],
         'Поговорить': [
             ['* Вы рассказываете анекдот про космонавтов.\n* Симбиот не смеётся. Тяжёлая публика.'],
@@ -77,6 +80,11 @@ const SYMBIOTE = {
         '* Урон не прошёл!\n* Симбиот полностью восстановился.',
     ],
     freeze: ['* Вы срываете вентиль криобаллона.\n* Ледяная струя бьёт прямо в симбиота!', '* Симбиот покрывается инеем...\n* ...и замирает.'],
+    // громкий звук и огонь: если пугнуть и тем, и другим — сбегает, бросив крысу
+    loud: ['* Вы изо всех сил колотите вилкой по тарелке!\n* ДЗЫНЬ! ДЗЫНЬ! ДЗЫНЬ!', '* Симбиот визжит и сжимается.\n* Громкие звуки ему не по нраву!'],
+    fire: ['* Вы чиркаете сигнальным факелом.\n* Вспыхивает яркий красный огонь!', '* Симбиот шипит и отползает от пламени.\n* Огня он боится!'],
+    fearOne: '* Симбиот дрожит. Ещё чуть-чуть — и он сдастся...',
+    scared: ['* Звон и огонь — это слишком для него!', '* Симбиот бросает крысу и с воплем удирает в вентиляцию.', '* Крыса свободна — живая и невредимая!'],
     noSpare: '* Вы предлагаете мир.\n* Симбиот не хочет мириться.',
     spare: [
         '* Вы опускаете оружие.',
@@ -102,8 +110,8 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const FONT = '"Press Start 2P", monospace';
-const SPEED = 150;         // скорость сердца с клавиатуры, пикс/сек
-const TOUCH_SPEED = 480;   // предел скорости, когда ведёшь пальцем
+const SPEED = 110;         // скорость сердца с клавиатуры, пикс/сек
+const TOUCH_SPEED = 230;   // предел скорости, когда ведёшь пальцем
 
 // ---------- АТАКИ ВРАГА ----------
 // box — размер рамки, dur — сколько секунд длится, k — злость врага (1 — обычная, больше — быстрее).
@@ -112,15 +120,15 @@ const PATTERNS = {
     // капли слизи падают сверху
     drip: { box: [200, 160], dur: 5.5, heart: 'low', update(S, I, dt, k) {
         S.t = (S.t === undefined ? 0.3 : S.t) - dt;
-        if (S.t <= 0) { S.t = 0.3 / k; shot({ kind: 'drop', x: rnd(I.x0 + 8, I.x1 - 8), y: I.y0 - 12, vy: 40, ay: 300 * k, r: 5 }); }
+        if (S.t <= 0) { S.t = 0.42 / k; shot({ kind: 'drop', x: rnd(I.x0 + 8, I.x1 - 8), y: I.y0 - 12, vy: 30, ay: 210 * k, r: 5 }); }
     } },
     // щупальца бьют из стен; перед ударом мигает пунктир — там будет щупальце
     tentacles: { box: [240, 150], dur: 6, update(S, I, dt, k) {
         S.t = (S.t === undefined ? 0.3 : S.t) - dt;
         if (S.t <= 0) {
-            S.t = 0.75 / k;
+            S.t = 1.0 / k;
             const y = Math.random() < 0.5 ? H.y : rnd(I.y0 + 10, I.y1 - 10);
-            shot({ kind: 'tent', y: clamp(y, I.y0 + 9, I.y1 - 9), side: Math.random() < 0.5 ? -1 : 1, warn: 0.55 / Math.sqrt(k), len: 0 });
+            shot({ kind: 'tent', y: clamp(y, I.y0 + 9, I.y1 - 9), side: Math.random() < 0.5 ? -1 : 1, warn: 1.0 / Math.sqrt(k), len: 0 });
         }
     } },
     // пасть: клыки едут справа налево, между верхним и нижним — щель
@@ -128,20 +136,20 @@ const PATTERNS = {
         if (S.t === undefined) { S.t = 0; S.gap = I.cy; }
         S.t -= dt;
         if (S.t <= 0) {
-            S.t = 0.95 / k;
+            S.t = 1.2 / k;
             S.gap = clamp(S.gap + rnd(-50, 50), I.y0 + 32, I.y1 - 32);
-            shot({ kind: 'tooth', x: I.x1 + 14, gap: S.gap, g: 56, w: 18, vx: -125 * k });
+            shot({ kind: 'tooth', x: I.x1 + 14, gap: S.gap, g: 66, w: 18, vx: -95 * k });
         }
     } },
     // сгустки появляются у стен и летят туда, где сердце
     blobs: { box: [190, 190], dur: 5.5, update(S, I, dt, k) {
         S.t = (S.t === undefined ? 0.2 : S.t) - dt;
         if (S.t <= 0) {
-            S.t = 0.55 / k;
+            S.t = 0.8 / k;
             const side = Math.floor(Math.random() * 4), u = Math.random();
             const x = side === 0 ? I.x0 + 8 : side === 1 ? I.x1 - 8 : I.x0 + 8 + u * (I.w - 16);
             const y = side === 2 ? I.y0 + 8 : side === 3 ? I.y1 - 8 : I.y0 + 8 + u * (I.h - 16);
-            if (Math.hypot(x - H.x, y - H.y) > 45) shot({ kind: 'blob', x, y, grow: 0.5, sp: 200 * k, r: 0 });
+            if (Math.hypot(x - H.x, y - H.y) > 45) shot({ kind: 'blob', x, y, grow: 0.5, sp: 135 * k, r: 0 });
             else S.t = 0.05;
         }
     } },
@@ -149,11 +157,11 @@ const PATTERNS = {
     ring: { box: [200, 190], dur: 6, update(S, I, dt, k) {
         S.t = (S.t === undefined ? 0.2 : S.t) - dt;
         if (S.t <= 0) {
-            S.t = 1.7 / k;
+            S.t = 2.0 / k;
             const n = 16, gap = Math.floor(Math.random() * n), rot = Math.random() * TAU;
             for (let i = 0; i < n; i++) {
                 if ((i - gap + n) % n < 3) continue;   // три капли пропускаем — это выход
-                shot({ kind: 'pel', cx: H.x, cy: H.y, a: rot + i / n * TAU, rad: 112, vr: -75 * k, r: 5 });
+                shot({ kind: 'pel', cx: H.x, cy: H.y, a: rot + i / n * TAU, rad: 112, vr: -55 * k, r: 5 });
             }
         }
     } },
@@ -298,24 +306,26 @@ const S = {
     shatter: () => { noise(0.6, 0.12, 'highpass', 3500, 0, 0.6, 900); for (let i = 0; i < 7; i++) tone('triangle', 1800 + Math.random() * 2600, 1500, 0.09, 0.03, i * 0.05); },
     flee: () => [0, 0.1, 0.2, 0.3, 0.4].forEach(w => noise(0.05, 0.06, 'bandpass', 850, w, 2.5)),
     squeak: () => { tone('triangle', 2300, 3300, 0.08, 0.04); tone('triangle', 3200, 2500, 0.1, 0.035, 0.09); },
+    clang: () => [0, 0.13, 0.26].forEach(w => { tone('square', 2100, 1900, 0.18, 0.06, w); tone('triangle', 3150, 3000, 0.28, 0.045, w); }),
+    fire: () => { noise(1.1, 0.1, 'bandpass', 900, 0, 0.6, 2600); noise(0.7, 0.05, 'highpass', 4000, 0.1, 1); },
     win: () => [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone('square', f, f, 0.12, 0.035, i * 0.09)),
 };
 
 // Музыка боя: 8 тактов ля минора по кругу — бас, арпеджио, мелодия и барабаны.
 // Не играет, если музыку выключили в меню
 const MUSIC = (() => {
-    const BPM = 140, SD = 60 / BPM / 4, VOL = 0.9;   // VOL — громкость музыки боя
-    const CH = [[57, 60, 64], [57, 60, 64], [53, 57, 60], [55, 59, 62], [57, 60, 64], [57, 60, 64], [53, 57, 60], [52, 56, 59]];   // Am Am F G Am Am F E
-    const BASS = [45, 45, 41, 43, 45, 45, 41, 40];
+    const BPM = 156, SD = 60 / BPM / 4, VOL = 0.9;   // VOL — громкость музыки боя
+    const CH = [[62, 65, 69], [62, 65, 69], [58, 62, 65], [60, 64, 67], [62, 65, 69], [55, 58, 62], [58, 62, 65], [57, 61, 64]];   // Dm Dm Bb C Dm Gm Bb A
+    const BASS = [38, 38, 34, 36, 38, 43, 34, 33];
     const MEL = [   // [шаг из 16, нота, длина в шагах]
-        [[0, 69, 4], [4, 72, 4], [8, 76, 2], [10, 74, 2], [12, 72, 2], [14, 71, 2]],
-        [[0, 72, 6], [8, 69, 6]],
-        [[0, 65, 4], [4, 69, 4], [8, 72, 4], [12, 77, 2], [14, 76, 2]],
-        [[0, 74, 6], [8, 71, 4], [12, 67, 4]],
-        [[0, 69, 4], [4, 72, 4], [8, 76, 4], [12, 81, 2], [14, 79, 2]],
-        [[0, 76, 6], [8, 72, 4], [12, 76, 4]],
-        [[0, 77, 4], [4, 76, 4], [8, 74, 4], [12, 72, 4]],
-        [[0, 71, 6], [8, 68, 4], [12, 71, 2], [14, 76, 2]],
+        [[0, 74, 2], [2, 74, 2], [4, 77, 2], [6, 74, 2], [8, 81, 4], [12, 79, 2], [14, 77, 2]],
+        [[0, 76, 4], [4, 74, 2], [6, 72, 2], [8, 74, 6], [14, 69, 2]],
+        [[0, 70, 2], [2, 74, 2], [4, 77, 4], [8, 82, 4], [12, 81, 2], [14, 79, 2]],
+        [[0, 79, 4], [4, 76, 4], [8, 72, 4], [12, 76, 2], [14, 79, 2]],
+        [[0, 81, 2], [2, 81, 2], [4, 84, 2], [6, 81, 2], [8, 86, 4], [12, 84, 2], [14, 82, 2]],
+        [[0, 82, 4], [4, 79, 4], [8, 74, 4], [12, 77, 2], [14, 79, 2]],
+        [[0, 77, 2], [2, 79, 2], [4, 81, 4], [8, 82, 2], [10, 81, 2], [12, 79, 2], [14, 77, 2]],
+        [[0, 76, 4], [4, 73, 4], [8, 76, 2], [10, 79, 2], [12, 81, 4]],
     ];
     const hz = m => 440 * Math.pow(2, (m - 69) / 12);
     let ac = null, out = null, timer = 0, next = 0, step = 0, W = null, playing = false;
@@ -567,7 +577,7 @@ function startRatEncounter() {
     scr.style.display = 'block';
     Object.assign(bt, { on: true, mode: 'intro', box: 'text', sel: 0, list: null, turn: 0, anger: 0, last: null, patI: 0, t: 0,
         fade: 1, flash: 0, shake: 0, hint: null, acts: {}, ratCalled: false, fight: null, pat: null, spray: 0, flavor: '', hitSeen: false });
-    Object.assign(E, { img: 'stand', showRat: true, showSym: false, mut: 0, pop: 1, hp: SYMBIOTE.hp, hpShown: SYMBIOTE.hp, shake: 0, ice: 0,
+    Object.assign(E, { img: 'stand', showRat: true, showSym: false, mut: 0, pop: 1, hp: SYMBIOTE.hp, hpShown: SYMBIOTE.hp, shake: 0, ice: 0, fear: {},
         alpha: 1, dy: 0, ratA: 1, ratRun: -1, slash: -1, fx: null, shards: null, bubble: null });
     Object.assign(H, { show: false, broken: false, shards: null, inv: 0 });
     BUL.length = 0; PFX.length = 0; timers.length = 0; tweens.length = 0; TX.mode = 'none'; TX.lay = null; TX.res = null;
@@ -641,6 +651,7 @@ function takeItem(id) { const i = HERO.items.indexOf(id); if (i >= 0) HERO.items
 async function useItem(id) {
     const it = ITEMS[id] || { name: id, use: '* Ничего не происходит.' };
     if (id === 'cryo' && E.showSym && E.ice < 1) { takeItem(id); return freeze(); }
+    if ((id === 'fork' || id === 'flare') && E.showSym && E.ice < 1) { if (id === 'flare') takeItem(id); return scare(id); }
     if (it.heal) {
         takeItem(id);
         const before = HERO.hp;
@@ -656,6 +667,28 @@ async function freeze() {
     S.ice(); tween(E, 'ice', 1, 0.9);
     await txSay([SYMBIOTE.freeze[1]]);
     E.ice = 1; HERO.flags.froze = true;
+}
+async function scare(id) {
+    E.fear = E.fear || {};
+    const first = !E.fear[id];
+    E.fear[id] = true;
+    if (id === 'fork') { S.clang(); E.shake = 0.6; } else { S.fire(); E.shake = 0.4; }
+    await txSay(id === 'fork' ? SYMBIOTE.loud : SYMBIOTE.fire);
+    if (E.fear.fork && E.fear.flare) return scaredAway();
+    if (first) await txSay([SYMBIOTE.fearOne]);
+}
+async function scaredAway() {
+    MUSIC.stop(1.2); HERO.flags.scared = true;
+    await txSay([SYMBIOTE.scared[0]]);
+    tween(E, 'alpha', 0, 1.2); tween(E, 'dy', -40, 1.2);   // слизь уползает вверх, в вентиляцию
+    E.showRat = true; E.mut = 0; E.ratA = 0; tween(E, 'ratA', 1, 0.5); S.squeak();
+    await txSay([SYMBIOTE.scared[1]]);
+    E.ratRun = 0; tween(E, 'ratRun', 1, 0.9); S.squeak();
+    await txSay([SYMBIOTE.scared[2]]);
+    E.showSym = false; S.win();
+    await txSay(SYMBIOTE.winSpare);
+    endBattle('spared');
+    return 'end';
 }
 async function spare() {
     if (E.ice < 1) { await txSay([SYMBIOTE.noSpare]); return; }
@@ -768,7 +801,7 @@ async function enemyTurn() {
     await bubble(line);
     if (!bt.on) return;
     if (!bt.hinted.dodge) { bt.hinted.dodge = true; bt.hint = { text: touchMode ? 'Води пальцем по экрану — сердце повторяет' : 'Стрелки — двигать сердце', t: 3.2 }; }
-    const k = Math.min(1.6, 1 + 0.07 * Math.min(bt.turn - 1, 6) + (bt.anger > 0 ? 0.25 : 0));
+    const k = Math.min(1.4, 1 + 0.05 * Math.min(bt.turn - 1, 6) + (bt.anger > 0 ? 0.2 : 0)) * (E.fear && Object.keys(E.fear).length ? 0.8 : 1);   // напуганный — бьёт слабее
     const ok = await new Promise(res => { bt.pat = { def, S: {}, t: 0, k, res, over: false }; });
     bt.pat = null;
     bt.anger = Math.max(0, bt.anger - 1);
