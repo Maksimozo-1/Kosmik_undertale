@@ -16,16 +16,16 @@ const WALK = 110, RUN = 180;   // скорость героя, пикс/сек
 // Стена над полом сама рисуется «фасадом» в 2 клетки, как в Undertale.
 const MAP = [
     "                                           ",
-    "              ####################         ",
-    "              ##===##======##===##         ",
-    "              ##===##======##===##         ",
-    "              #..................#         ",
-    "              #..................#         ",
-    "              #..................#         ",
-    "              #..................#         ",
-    " ###########  #..................#         ",
-    " ######==###  #..................#         ",
-    " ######==##############DD##################",
+    "              ##############################",
+    "              ##===##======##===############",
+    "              ##===##======##===############",
+    "              #..................###.......#",
+    "              #..................###.......#",
+    "              #..................###..#....#",
+    "              #..................###..#....#",
+    " ###########  #..................###..#....#",
+    " ######==###  #..................###..######",
+    " ######==##############DD###########..#####",
     " #.........##=#########DD###########KK#==##",
     " #.........##=#########DD###########KK#==##",
     " #.........d.......,,........,,...,,......L",
@@ -52,6 +52,7 @@ const ROOMS = [
     { name: 'КОРИДОР',        dark: 0.87, x: 11, y: 11, w: 32, h: 5 },
     { name: 'МОСТИК',         dark: 0.80, x: 15, y: 2,  w: 18, h: 9 },
     { name: 'ГРУЗОВОЙ ОТСЕК', dark: 0.93, x: 14, y: 16, w: 20, h: 11 },
+    { name: 'ЖИЛОЙ ОТСЕК',    dark: 0.92, x: 36, y: 1,  w: 8,  h: 9 },   // за дверью K: погоня волны слизи
     { name: '???',            dark: 0.95, x: 9,  y: 18, w: 5,  h: 6 },   // тайник за стеной грузового отсека
 ];
 
@@ -92,13 +93,15 @@ const PROPS = [
     { t: 'container', x: 15, y: 22, say: ['* Грузовой контейнер. Заперт.'] },
     { t: 'container', v: 'broken', x: 29, y: 18, say: ['* Контейнер для биообразцов.', '* Его вскрыли изнутри. Края металла вывернуты наружу.'] },
     { t: 'crate', v: 'bio', x: 18, y: 18, say: ['* На ящике надпись: «ОСТОРОЖНО: БИООБРАЗЦЫ».', '* Пломба сорвана.'] },
-    { t: 'crate', x: 19, y: 18, say: CRATE }, { t: 'crate', x: 18, y: 19, say: CRATE },
+    { t: 'crate', x: 19, y: 18, say: CRATE,
+      item: 'card', take: ['* Под пустыми коробками что-то блестит.', '* Ключ-карта. На ней выцарапано: «КАЮТЫ».', '* Вы взяли КЛЮЧ-КАРТУ.'] }, { t: 'crate', x: 18, y: 19, say: CRATE },
     { t: 'crate', x: 20, y: 23, say: CRATE }, { t: 'crate', v: 'open', x: 21, y: 23, say: ['* Ящик с камбуза. Пусто, только крошки.'],
       item: 'fork', take: ['* Ящик с камбуза. Посуда, салфетки...', '* Среди всего — железная тарелка и вилка. Звенят на весь отсек.', '* Вы взяли ВИЛКУ И ТАРЕЛКУ.'] },
     { t: 'crate', x: 20, y: 24, say: CRATE },
     { t: 'crate', x: 32, y: 18, say: CRATE }, { t: 'crate', x: 33, y: 18, say: CRATE }, { t: 'crate', x: 33, y: 19, say: CRATE },
     { t: 'crate', x: 31, y: 25, say: CRATE }, { t: 'crate', x: 32, y: 25, say: CRATE }, { t: 'crate', x: 32, y: 24, say: ['* Аварийный ящик. Пустой.'],
       item: 'flare', take: ['* Аварийный ящик с красной полосой.', '* Внутри — сигнальный факел. Горит даже в вакууме.', '* Вы взяли СИГНАЛЬНЫЙ ФАКЕЛ.'] },
+    { t: 'save', x: 41, y: 7 },
     // тайник: проход в левой стене грузового отсека (клетка 13,21)
     { t: 'crate', v: 'open', x: 9, y: 20, say: ['* Пустой ящик. Кто-то здесь уже был.'],
       item: 'claws', take: ['* Старый ящик, задвинутый в самый угол.', '* Внутри, в промасленной тряпке, — железные когти.', '* Вы взяли ЖЕЛЕЗНЫЕ КОГТИ.'] },
@@ -112,8 +115,10 @@ const TILE_SAY = {
     x: ['* Проход в двигательный отсек завален обломками.', '* Из-под них тянет холодом.'],
     '=': ['* За стеклом — чужая планета.', '* Корабль рухнул прямо в фиолетовый песок. Вокруг дымятся обломки обшивки.'],
 };
+const PUDDLE = ['* Лужа фиолетовой слизи растеклась по всему коридору.', '* Пути назад нет.'];
 const SPOT_SAY = { '31,12': ['* Из разбитого щитка сыплются искры.', '* Лучше не трогать.'] };
 SPOT_SAY['7,10'] = SPOT_SAY['8,10'] = ['* По стеклу ползёт трещина. На полу — осколки.', '* Снаружи фиолетовый песок. Из него торчат куски нашей обшивки.'];
+for (let y = 4; y <= 10; y++) SPOT_SAY['38,' + y] = SPOT_SAY['37,' + y] = SPOT_SAY['36,' + y] = PUDDLE;
 const CRACKED = [8, 22, 39];   // в этих клетках (по x) стекло иллюминатора треснуло при падении
 for (let x = 21; x <= 26; x++) for (const y of [2, 3]) SPOT_SAY[x + ',' + y] = ['* Над горизонтом висит чёрная дыра.', '* Та самая.'];
 const SAVE_SAY = ['* (Звезда мерцает в темноте.)', '* Вы чувствуете, как ваша решимость крепнет.', '* (HP восстановлено. Игра сохранена.)'];
@@ -143,6 +148,8 @@ const LIGHTS = [
     { x: 19.5, y: 18.8, r: 150, c: '#ffcf7a', g: 0.12, fx: 'dying', lamp: { x: 19.5, y: 16.4, k: 'warm' } },
     { x: 26.5, y: 24.8, r: 130, c: '#ff2a2a', g: 0.14, fx: 'alarm', ph: 0.6 },
     { x: 29.9, y: 19.7, r: 75, c: '#b366ff', g: 0.3, fx: 'breath' },
+    { x: 37, y: 6.5, r: 110, c: '#ff2a2a', g: 0.2, fx: 'alarm', ph: 2.2, lamp: { x: 37, y: 2.35, k: 'alarm' } },
+    { x: 40.9, y: 6, r: 120, c: '#cfe8ff', g: 0.07, fx: 'flicker', lamp: { x: 40.9, y: 2.45, k: 'cold' } },
 ];
 
 // ---------- служебное ----------
@@ -668,8 +675,9 @@ let state = 'off', amb = 0.86, curRoom = null, enc = null, fadeA = 1, clock = 0,
 // ---------- столкновения ----------
 function solidTile(tx, ty) {
     const ch = tileAt(tx, ty);
+    if (HERO.flags.chaseDone && tx >= 36 && tx <= 37 && ty >= 4 && ty <= 10) return true;   // лужа слизи — назад не пройти
     if (isFloor(ch) || ch === 's') return false;   // тайный проход
-    if (ch === 'D' || ch === 'd') { const d = doorAt[tx + ',' + ty]; return !d || d.open < 0.75; }
+    if (ch === 'D' || ch === 'd' || ch === 'K') { const d = doorAt[tx + ',' + ty]; return !d || d.open < 0.75; }
     return true;
 }
 function blocked(x0, y0, x1, y1, skipProps) {
@@ -732,6 +740,7 @@ function update(dt) {
         if (want !== d.want) { d.want = want; SFX.door(); }
         d.open = clamp(d.open + (want ? 1 : -1) * dt * 3.5, 0, 1);
     }
+    updateChase(dt);
     updateRat(dt);
     updateFx(dt);
     updateCam(dt);
@@ -833,7 +842,60 @@ function interact() {
     }
     const tx = Math.floor(qx / T), ty = Math.floor(qy / T), ch = tileAt(tx, ty);
     if (SPOT_SAY[tx + ',' + ty]) return say(SPOT_SAY[tx + ',' + ty]);
+    if (ch === 'K' && !HERO.flags.cardUsed && HERO.items.includes('card')) return openCabins(doorAt[tx + ',' + ty]);
+    if (ch === 'K' && HERO.flags.cardUsed) return say(['* Дверь заклинило.', '* Из-под неё сочится слизь.']);
     if (TILE_SAY[ch]) { if (ch === 'K' || ch === 'L') SFX.locked(); return say(TILE_SAY[ch]); }
+}
+
+// ---------- погоня: волна слизи за дверью кают ----------
+// Ключ-карта открывает дверь, сзади из вентиляции хлещет волна. Беги вверх (держи X) и резко сверни направо —
+// волна врежется в стену и растечётся. Догнала — начинаешь забег заново от двери.
+let chase = null;
+function openCabins(d) {
+    HERO.flags.cardUsed = true; SFX.item();
+    say(['* Вы прикладываете ключ-карту. Замок пищит.', '* Дверь медленно разъезжается...'], () => {
+        d.locked = false;
+        say(['* За спиной что-то хлюпает.', '* Из вентиляции хлещет волна слизи!', '* БЕГИТЕ! (держи X)'], startChase);
+    });
+}
+function startChase() {
+    chase = { y: P.y + 110, v: 70, done: false };
+    events.push({ at: clock + 0.2, fn: () => SFX.door() });
+}
+function updateChase(dt) {
+    if (!chase || chase.done) return;
+    if (state !== 'play') return;
+    chase.v = Math.min(168, chase.v + dt * 140);   // разгоняется — пешком не уйти, только бегом
+    chase.y -= chase.v * dt;
+    if (Math.random() < dt * 8) noise(0.12, 0.03, 'lowpass', 300, 0, 1.2);
+    const inLane = P.x < 38.1 * T;
+    if (inLane && chase.y - P.y < 4) {   // догнала
+        chase.y = 12.6 * T; chase.v = 60; P.x = 37 * T; P.y = 10.4 * T; P.dir = 'up';
+        return say(['* Слизь накрывает вас с головой!', '* ...Вы вырываетесь и откатываетесь к двери.', '* Бегите, не оглядываясь! (держи X)']);
+    }
+    if (chase.y <= 4 * T + 4) {          // врезалась в стену
+        chase.y = 4 * T; chase.done = true; HERO.flags.chaseDone = true;
+        const d = doorAt['36,11']; if (d) { d.locked = true; d.open = 0; d.want = 0; }
+        if (inLane) { P.x = 39.6 * T; P.y = 5.6 * T; }   // свернул в последний миг
+        SFX.locked(); noise(0.5, 0.09, 'lowpass', 220, 0, 0.8);
+        chase = null;
+        say(['* ШЛЁП!', '* Волна врезается в стену и растекается по полу.', '* Коридор позади залит слизью. Пути назад нет.']);
+    }
+}
+function drawSlime(c, t) {
+    const done = HERO.flags.chaseDone, top = chase ? chase.y : done ? 4 * T : null;
+    if (top === null) return;
+    const x0 = 36 * T - 2, x1 = 38 * T + 2, bot = done ? 11 * T : 14 * T;
+    c.save();
+    c.beginPath(); c.moveTo(x0, bot);
+    for (let x = x0; x <= x1; x += 4) c.lineTo(x, top - 6 * Math.abs(Math.sin(x * 0.09 + t * (done ? 1.5 : 7))) - (done ? 0 : 10 * Math.sin((x - x0) / (x1 - x0) * Math.PI)));
+    c.lineTo(x1, bot); c.closePath();
+    c.fillStyle = 'rgba(92, 20, 150, 0.92)'; c.fill();
+    c.globalAlpha = 0.55; c.fillStyle = '#c27bff'; c.fillRect(x0 + 6, top + 4, x1 - x0 - 12, 3);
+    for (let i = 0; i < 6; i++) { const bx = x0 + 8 + ((i * 37 + t * 20) % (x1 - x0 - 16)), by = top + 14 + ((i * 53 + t * 30) % Math.max(10, bot - top - 20)); c.fillRect(bx, by, 3, 3); }
+    if (done) { c.globalAlpha = 0.85; c.fillStyle = 'rgba(92, 20, 150, 0.9)'; c.beginPath(); c.ellipse(37 * T, 4 * T + 4, 46, 12, 0, 0, Math.PI * 2); c.fill(); }
+    c.restore();
+    halos.push([37 * T, top + 16, 70, '#b366ff', done ? 0.25 : 0.55]);
 }
 
 // ---------- экран и камера ----------
@@ -964,7 +1026,7 @@ function drawDoors(c) {
             c.save(); c.beginPath(); c.rect(r.x, r.y, r.w, r.h); c.clip();
             c.drawImage(ART.panel[0], r.x - s, r.y); c.drawImage(ART.panel[1], r.x + 28 + s, r.y);
             c.restore();
-            if (d.ch === 'K') tape(c, r);
+            if (d.ch === 'K' && !HERO.flags.cardUsed) tape(c, r);
         } else if (d.ch === 'd') {
             const h = Math.round(r.h / 2 * (1 - d.open));
             if (h > 0) { slab(c, r.x, r.y, r.w, h, true); slab(c, r.x, r.y + r.h - h, r.w, h, false); }
@@ -1210,6 +1272,7 @@ function render() {
     cx.setTransform(1, 0, 0, 1, 0, 0); cx.drawImage(ec.canvas, 0, 0);
     cx.setTransform(1, 0, 0, 1, -ox, -oy);
     for (const k in EMIT) if (EMIT[k].flash > 0) halos.push([EMIT[k].x, EMIT[k].y, 26, '#ffcc66', 0.5]);
+    drawSlime(cx, t);
     drawHalos(); drawAir();
     // 5) встреча с крысой и затемнение при входе
     drawOverlay(ox, oy);
@@ -1516,7 +1579,7 @@ window.loadShipSave = loadShipSave;
 window.shipArt = ART;   // бой (battle.js) берёт отсюда крысу
 window.shipSound = { tone, noise, ctx: () => actx };   // ...и звуки
 // для проверки: открой игру с ?debug — в консоли появится window.ship
-if (/[?&]debug/.test(location.search)) window.ship = { P, rat, DOORS, props, get state() { return state; }, get room() { return curRoom && curRoom.name; }, interact, startEncounter };
+if (/[?&]debug/.test(location.search)) window.ship = { P, rat, DOORS, props, get state() { return state; }, get room() { return curRoom && curRoom.name; }, get chase() { return chase; }, interact, startEncounter };
 markContinue();
 
 // Космонавт для карты: 4 стороны (вниз, вверх, влево, вправо) × 3 кадра ходьбы, кадр 28×46.
