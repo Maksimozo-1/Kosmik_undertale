@@ -139,8 +139,11 @@ body, html {
 #joystick-area, .action-btn { touch-action: none; -webkit-tap-highlight-color: transparent; }
 #joystick-stick { transition: none; }
 /* на компьютере с мышкой джойстик не нужен — там клавиатура */
+#battle-joy { position: absolute; left: 3vw; bottom: 16%; width: 130px; height: 130px; z-index: 5; touch-action: none; -webkit-tap-highlight-color: transparent; }
+#bj-base { width: 100%; height: 100%; background: rgba(30, 30, 30, 0.5); border: 4px solid #444; border-radius: 50%; position: relative; box-sizing: border-box; }
+#bj-stick { width: 50px; height: 50px; background: rgba(70, 70, 70, 0.8); border: 2px solid #555; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 @media (hover: hover) and (pointer: fine) {
-    #controls { display: none !important; }
+    #controls, #battle-joy { display: none !important; }
     #ship-hint { display: block; }
 }
 .menu-btn.no-save { opacity: 0.45; }

@@ -21,6 +21,8 @@ const ITEMS = {
     fork:   { name: 'Вилка и тарелка', use: '* Вы стучите вилкой по тарелке.\n* ДЗЫНЬ! Громко.' },
     flare:  { name: 'Сигнальный факел', use: '* Вы зажигаете факел.\n* Красный огонь шипит и трещит.' },
     cryo:   { name: 'Криобаллон', use: '* Вы крутите вентиль. Шипит холод.\n* Ничего не происходит.' },
+    // оружие из тайника в грузовом отсеке: надел один раз — удары сильнее до конца игры
+    claws:  { name: 'Железные когти', use: '* Вы надели железные когти.\n* Пальцы стали тяжёлыми и острыми.\n* АТАКА +8.' },
 };
 
 // ---------- ВРАГ: СИМБИОТ ----------
@@ -652,6 +654,10 @@ async function useItem(id) {
     const it = ITEMS[id] || { name: id, use: '* Ничего не происходит.' };
     if (id === 'cryo' && E.showSym && E.ice < 1) { takeItem(id); return freeze(); }
     if ((id === 'fork' || id === 'flare') && E.showSym && E.ice < 1) { if (id === 'flare') takeItem(id); return scare(id); }
+    if (id === 'claws') {
+        if (HERO.flags.claws) return txSay(['* Когти уже на вас.']);
+        HERO.flags.claws = true; S.bar(); return txSay([it.use]);
+    }
     if (it.heal) {
         takeItem(id);
         const before = HERO.hp;
@@ -739,7 +745,7 @@ async function fightResolve(acc) {
     await wait(0.4);
     bt.fight = null; bt.box = 'text';
     if (E.ice >= 1) return shatter();
-    const dmg = Math.max(1, Math.round((8 + 24 * acc) * rnd(0.9, 1.1)));
+    const dmg = Math.max(1, Math.round((8 + 24 * acc + (HERO.flags.claws ? 8 : 0)) * rnd(0.9, 1.1)));
     E.img = 'cut'; E.shake = 0.45; S.hitE();
     E.hp = Math.max(0, E.hp - dmg); E.fx = { text: String(dmg), col: '#ff3030', t: 0 };
     const HT = SYMBIOTE.hit;
@@ -800,7 +806,7 @@ async function enemyTurn() {
     bt.ratCalled = false;
     await bubble(line);
     if (!bt.on) return;
-    if (!bt.hinted.dodge) { bt.hinted.dodge = true; bt.hint = { text: touchMode ? 'Води пальцем по экрану — сердце повторяет' : 'Стрелки — двигать сердце', t: 3.2 }; }
+    if (!bt.hinted.dodge) { bt.hinted.dodge = true; bt.hint = { text: touchMode ? 'Джойстик слева — двигать сердце' : 'Стрелки — двигать сердце', t: 3.2 }; }
     const k = Math.min(1.4, 1 + 0.05 * Math.min(bt.turn - 1, 6) + (bt.anger > 0 ? 0.2 : 0)) * (E.fear && Object.keys(E.fear).length ? 0.8 : 1);   // напуганный — бьёт слабее
     const ok = await new Promise(res => { bt.pat = { def, S: {}, t: 0, k, res, over: false }; });
     bt.pat = null;
@@ -818,6 +824,7 @@ function dodgeUpdate(dt) {
     if (kd('ArrowUp', 'KeyW')) my--;
     if (kd('ArrowDown', 'KeyS')) my++;
     if (mx || my) { const l = Math.hypot(mx, my); H.x += mx / l * SPEED * dt; H.y += my / l * SPEED * dt; }
+    if (bj.id !== null) { H.x += bj.x * SPEED * 1.3 * dt; H.y += bj.y * SPEED * 1.3 * dt; }   // джойстик: чем дальше палец, тем быстрее
     if (drag.dx || drag.dy) {
         const l = Math.hypot(drag.dx, drag.dy), m = Math.min(l, TOUCH_SPEED * dt);
         H.x += drag.dx / l * m; H.y += drag.dy / l * m;
@@ -1252,9 +1259,7 @@ cv.addEventListener('pointerdown', e => {
     e.preventDefault();
     touchMode = e.pointerType !== 'mouse';
     if (typeof shipUnlockAudio === 'function') shipUnlockAudio();
-    if (bt.mode === 'dodge') {
-        drag.id = e.pointerId; drag.x = e.clientX; drag.y = e.clientY;
-        try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    if (bt.mode === 'dodge') {   // сердце — только джойстиком, тап по экрану лишь пропускает реплику
         if (E.bubble) bubbleSkip();
         return;
     }
@@ -1289,6 +1294,25 @@ document.addEventListener('visibilitychange', () => {
     if (document.hidden) { bt.music = MUSIC.on; MUSIC.stop(0.05); keys.clear(); }
     else if (bt.music) MUSIC.start();
 });
+
+// джойстик в бою (как на карте): палец можно увести за круг, пока не отпустишь
+const bj = { x: 0, y: 0, id: null };
+const bjArea = document.getElementById('battle-joy'), bjBase = document.getElementById('bj-base'), bjStick = document.getElementById('bj-stick');
+function bjMove(e) {
+    const r = bjBase.getBoundingClientRect(), max = r.width * 0.3;
+    let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+    const d = Math.hypot(dx, dy);
+    if (d > max) { dx *= max / d; dy *= max / d; }
+    bj.x = dx / max; bj.y = dy / max;
+    bjStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+}
+function bjReset() { bj.x = bj.y = 0; bj.id = null; if (bjStick) bjStick.style.transform = 'translate(-50%, -50%)'; }
+if (bjArea) {
+    bjArea.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (!bt.on) return; touchMode = true; bj.id = e.pointerId; try { bjArea.setPointerCapture(e.pointerId); } catch (_) {} bjMove(e); });
+    bjArea.addEventListener('pointermove', e => { if (e.pointerId === bj.id) { e.preventDefault(); bjMove(e); } });
+    for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) bjArea.addEventListener(ev, e => { if (e.pointerId === bj.id) bjReset(); });
+}
+window.addEventListener('blur', bjReset);
 
 window.startRatEncounter = startRatEncounter;
 // для проверки: открой игру с ?debug — в консоли появится window.battle
